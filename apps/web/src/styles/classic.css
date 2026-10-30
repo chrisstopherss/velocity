@@ -1,0 +1,235 @@
+.shell-classic {
+  grid-template-rows: 26px 70px 28px 1fr 24px;
+}
+
+.shell-classic .menubar,
+.shell-classic .sbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 8px;
+  background: var(--panel);
+  border-bottom: 1px solid #111;
+}
+
+.shell-classic .menubar {
+  justify-content: space-between;
+}
+
+.shell-classic .sbar {
+  border-top: 2px solid;
+  border-color: #7a7a7a #161616 #161616 #7a7a7a;
+  font-size: 11px;
+}
+
+.shell-classic .online {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  color: var(--ok);
+  font-weight: 700;
+}
+
+.shell-classic .fkeys {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #222;
+  border-bottom: 1px solid #000;
+}
+
+.shell-classic .fkeys button {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 3px;
+  width: 92px;
+  padding: 3px 0 4px;
+  border: 2px solid;
+  border-color: #8a8a8a #111 #111 #8a8a8a;
+  background: linear-gradient(#4a4a4a, #2f2f2f);
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+
+.shell-classic .fkeys button:hover:not(:disabled) {
+  filter: brightness(1.25);
+}
+
+.shell-classic .fkeys button:active:not(:disabled) {
+  border-color: #111 #8a8a8a #8a8a8a #111;
+  transform: translateY(1px);
+}
+
+.shell-classic .fkeys button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.shell-classic .fkeys em {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  color: var(--warn);
+  font-size: 9px;
+  font-style: normal;
+  font-weight: 700;
+}
+
+.shell-classic .sline {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 0 10px;
+  background: #262626;
+  border-bottom: 1px solid #000;
+}
+
+.shell-classic .sline .mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.shell-classic .sline .hint {
+  margin-left: auto;
+  color: var(--muted);
+}
+
+.classic-grid {
+  display: grid;
+  grid-template-columns: 560px 1fr 340px;
+  grid-template-rows: 1.2fr 1fr;
+  grid-template-areas:
+    'units map radio'
+    'queue call radio';
+  gap: 6px;
+  padding: 6px;
+  min-height: 0;
+}
+
+.area-units {
+  grid-area: units;
+  min-height: 0;
+}
+.area-map {
+  grid-area: map;
+  min-height: 0;
+}
+.area-radio {
+  grid-area: radio;
+  min-height: 0;
+}
+.area-queue {
+  grid-area: queue;
+  min-height: 0;
+}
+.area-call {
+  grid-area: call;
+  min-height: 0;
+}
+
+[data-theme='classic'] .panel {
+  border: 2px solid;
+  border-color: #7a7a7a #161616 #161616 #7a7a7a;
+}
+
+[data-theme='classic'] .panel-hd {
+  height: 21px;
+  padding: 0 3px 0 6px;
+  background: linear-gradient(90deg, #0a246a, #3a6ea5);
+  color: #fff;
+  font-weight: 700;
+}
+
+[data-theme='classic'] .panel-extra {
+  font-weight: 400;
+}
+
+[data-theme='classic'] .winctl {
+  display: flex;
+  gap: 2px;
+}
+
+[data-theme='classic'] .winctl i {
+  display: block;
+  width: 16px;
+  height: 14px;
+  background: var(--panel2);
+  border: 1px solid;
+  border-color: #9a9a9a #111 #111 #9a9a9a;
+}
+
+[data-theme='classic'] .tbl {
+  font: 700 11.5px Arial, Helvetica, sans-serif;
+  background: #000;
+}
+
+[data-theme='classic'] .tbl th {
+  background: var(--panel2);
+  border: 1px solid;
+  border-color: #7a7a7a #161616 #161616 #7a7a7a;
+}
+
+[data-theme='classic'] .tbl td {
+  padding: 3px 8px;
+  border-bottom: 1px solid #222;
+}
+
+[data-theme='classic'] .unit-available td {
+  color: #e8e8e8;
+}
+
+[data-theme='classic'] .unit-enroute td {
+  color: #ffff50;
+}
+
+[data-theme='classic'] .unit-onscene td {
+  color: #48e8ff;
+}
+
+[data-theme='classic'] .prio-1 td {
+  background: #c42b2b;
+  color: #fff;
+}
+
+[data-theme='classic'] .st-available,
+[data-theme='classic'] .st-enroute,
+[data-theme='classic'] .st-onscene {
+  color: inherit;
+}
+
+[data-theme='classic'] .panel-radio .panel-bd {
+  background: #000;
+}
+
+[data-theme='classic'] .radio-lines {
+  font: 700 12px Arial, sans-serif;
+  color: #48e8ff;
+}
+
+[data-theme='classic'] .radio-lines b {
+  color: var(--warn);
+}
+
+[data-theme='classic'] .btn {
+  border: 2px solid;
+  border-color: #8a8a8a #111 #111 #8a8a8a;
+  background: var(--panel2);
+}
+
+[data-theme='classic'] .btn.primary {
+  color: #fff;
+}
+
+[data-theme='classic'] .score-card {
+  border: 2px solid;
+  border-color: #7a7a7a #161616 #161616 #7a7a7a;
+}
+
+[data-theme='classic'] .transcript p.caller {
+  background: #1f1f1f;
+}
