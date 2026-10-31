@@ -1,4 +1,4 @@
-import { Clock, GraduationCap, Info, PhoneCall, Radio } from 'lucide-react';
+import { Clock, GraduationCap, Info, PhoneCall } from 'lucide-react';
 import { formatClock } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import { ActiveCall } from '../panels/ActiveCall';
@@ -15,8 +15,8 @@ export function ModernShell({ g }: { g: GameApi }) {
     <div className="shell shell-modern">
       <header className="topbar">
         <div className="brand">
-          <Radio size={18} aria-hidden="true" />
-          Velocity
+          <img className="brand-logo" src="/brand/logo.png" alt="" width={44} height={17} />
+          <span className="wordmark">Velocity</span>
         </div>
         <p className="hint">
           <Info size={14} aria-hidden="true" />

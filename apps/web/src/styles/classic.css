@@ -16,6 +16,19 @@
   justify-content: space-between;
 }
 
+.shell-classic .welcome {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.shell-classic .welcome img {
+  display: block;
+  height: 16px;
+  width: auto;
+}
+
 .shell-classic .sbar {
   border-top: 2px solid;
   border-color: #7a7a7a #161616 #161616 #7a7a7a;

@@ -17,7 +17,10 @@ export function ClassicShell({ g }: { g: GameApi }) {
   return (
     <div className="shell shell-classic">
       <div className="menubar">
-        <span>Velocity CAD [Dispatcher console]</span>
+        <span className="welcome">
+          <img src="/brand/logo.png" alt="" width={40} height={16} />
+          Welcome to Velocity CAD
+        </span>
         <ThemeSwitch />
       </div>
 

@@ -12,9 +12,21 @@
 .shell-modern .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  gap: 10px;
+}
+
+.shell-modern .brand-logo {
+  display: block;
+  height: 17px;
+  width: auto;
+}
+
+.shell-modern .wordmark {
+  display: inline-block;
+  font: italic 800 17px/1 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transform: skewX(-8deg);
 }
 
 .shell-modern .hint {
