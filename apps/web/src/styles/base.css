@@ -697,6 +697,10 @@ textarea {
   color: var(--muted);
 }
 
+.stop-hd small + .icon-btn {
+  margin-left: 0;
+}
+
 .stop-bd {
   display: flex;
   flex-direction: column;

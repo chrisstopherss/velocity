@@ -1,4 +1,5 @@
-import { Car, CircleCheck, Info, TriangleAlert } from 'lucide-react';
+import { Car, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
+import { useState } from 'react';
 import { fullName } from '../data/people';
 import { backupNeeded, isOpen, stopWhere } from '../game/stops';
 import { formatClock } from '../game/sim';
@@ -58,8 +59,9 @@ function Status({ g, stop }: { g: GameApi; stop: Stop }) {
 }
 
 function Closed({ g }: { g: GameApi }) {
+  const [hidden, setHidden] = useState(false);
   const result = g.state.stopResults[g.state.stopResults.length - 1];
-  if (!result) return null;
+  if (!result || hidden) return null;
   const tone = result.total >= 80 ? 'ok' : result.total >= 50 ? 'warn' : 'bad';
   return (
     <section className="stop-card" aria-label="Last traffic stop">
@@ -67,6 +69,9 @@ function Closed({ g }: { g: GameApi }) {
         <Car size={16} aria-hidden="true" />
         <b>Traffic stop {result.id}</b>
         <small>{result.unitId}</small>
+        <button type="button" className="icon-btn" aria-label="Close stop result" onClick={() => setHidden(true)}>
+          <X size={16} aria-hidden="true" />
+        </button>
       </header>
       <div className="stop-bd">
         <p className="stop-score">
@@ -79,6 +84,11 @@ function Closed({ g }: { g: GameApi }) {
             <li key={n}>{n}</li>
           ))}
         </ul>
+        <div className="stop-btns">
+          <button type="button" className="btn primary" autoFocus onClick={() => setHidden(true)}>
+            Done
+          </button>
+        </div>
       </div>
     </section>
   );
