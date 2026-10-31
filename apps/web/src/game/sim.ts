@@ -19,6 +19,10 @@ export function routeToPostal(unit: Pick<Unit, 'x' | 'y'>, postal: number, graph
   return routeBetween(graph, { x: unit.x, y: unit.y }, { x: p.x, y: p.y }).points.slice(1);
 }
 
+export function routeToPoint(unit: Pick<Unit, 'x' | 'y'>, to: Point, graph: RoadGraph = roadGraph): Point[] {
+  return routeBetween(graph, { x: unit.x, y: unit.y }, to).points.slice(1);
+}
+
 export function etaSeconds(unit: Pick<Unit, 'x' | 'y'>, postal: number, graph: RoadGraph = roadGraph): number | null {
   const p = postalById.get(postal);
   if (!p) return null;

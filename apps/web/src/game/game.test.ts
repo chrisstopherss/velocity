@@ -8,6 +8,8 @@ import { agencyColor, agencyIcons, headingOf, priorityStyle } from '../panels/Ma
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
+import { PLATE_DELAY, scoreStop } from './stops';
+import type { Stop } from './types';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
@@ -635,5 +637,60 @@ describe('map markers', () => {
       expect(agencyColor[a]).toMatch(/^#/);
       expect(agencyIcons[a]).toBeTruthy();
     }
+  });
+});
+
+describe('traffic stops', () => {
+  const withStop = (outcome: Stop['outcome'] = 'routine') => {
+    let s = initialState(3, firstScenario(), true);
+    s = reducer(s, { type: 'tick', dt: s.nextStopAt - s.clock + 0.1 });
+    const stop = s.stops[0];
+    s = { ...s, stops: [{ ...stop, outcome }] };
+    return s;
+  };
+
+  it('stays off unless it is turned on', () => {
+    const s = reducer(initialState(3), { type: 'tick', dt: 300 });
+    expect(s.stops).toHaveLength(0);
+  });
+
+  it('puts a free unit on a stop and calls it in on the radio', () => {
+    const s = withStop();
+    expect(s.stops).toHaveLength(1);
+    expect(s.units.find((u) => u.id === s.stops[0].unitId)?.status).toBe('onstop');
+    expect(s.radio.some((l) => l.text.includes('traffic stop'))).toBe(true);
+  });
+
+  it('needs the copy before the plate can run', () => {
+    let s = withStop();
+    expect(reducer(s, { type: 'stopPlate' })).toBe(s);
+    s = run(s, [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    expect(s.stops[0].plateAskedAt).not.toBeNull();
+    s = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+    expect(s.stops[0].plateResult).toBeTruthy();
+  });
+
+  it('asks for backup on a hit and sends the units that were picked', () => {
+    let s = run(withStop('stolen'), [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    s = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+    expect(s.stops[0].backupAskedAt).not.toBeNull();
+    const free = s.units.find((u) => u.status === 'available')!;
+    s = reducer(s, { type: 'stopBackup', unitIds: [free.id] });
+    expect(s.stops[0].backupIds).toEqual([free.id]);
+    expect(s.units.find((u) => u.id === free.id)?.status).toBe('enroute');
+  });
+
+  it('scores a clean stop with no backup at full marks', () => {
+    const stop = { ...withStop().stops[0], ackAt: 5, plateAskedAt: 10 };
+    expect(scoreStop(stop, false).total).toBe(100);
+    expect(scoreStop({ ...stop, backupIds: ['1A-12'] }, false).total).toBe(50);
+  });
+
+  it('frees the units and scores when a routine stop runs out', () => {
+    let s = run(withStop(), [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    s = reducer(s, { type: 'tick', dt: 120 });
+    expect(s.stops[0].closedAt).not.toBeNull();
+    expect(s.stopResults).toHaveLength(1);
+    expect(s.units.every((u) => u.status !== 'onstop')).toBe(true);
   });
 });

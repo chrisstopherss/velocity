@@ -10,15 +10,19 @@ const statusText: Record<Status, string> = {
   available: 'Available',
   enroute: 'En route',
   onscene: 'On scene',
+  onstop: 'On stop',
 };
 
 export function UnitStatus({ g }: { g: GameApi }) {
   const { state, selected, toggle, sendSelected } = g;
   const { incident, phase, units, scenario } = state;
-  const canPick = phase === 'incident' && incident !== null;
+  const stop = state.stops.find((x) => x.closedAt === null && x.ackAt !== null);
+  const canPickIncident = phase === 'incident' && incident !== null;
+  const canPick = canPickIncident || stop !== undefined;
+  const target = canPickIncident && incident ? incident.postal : stop?.postal ?? null;
 
   const recommended = new Set<string>();
-  if (canPick && incident) {
+  if (canPickIncident && incident) {
     units
       .filter((u) => u.status === 'available')
       .map((u) => ({ id: u.id, eta: etaSeconds(u, incident.postal) ?? Infinity }))
@@ -43,7 +47,7 @@ export function UnitStatus({ g }: { g: GameApi }) {
         <tbody>
           {units.map((u) => {
             const pickable = canPick && u.status === 'available';
-            const eta = canPick && incident ? etaSeconds(u, incident.postal) : null;
+            const eta = target !== null ? etaSeconds(u, target) : null;
             const at = nearestPostal(u.x, u.y);
             return (
               <tr key={u.id} className={`unit-${u.status}`}>
@@ -72,7 +76,7 @@ export function UnitStatus({ g }: { g: GameApi }) {
         </tbody>
       </table>
       <div className="panel-foot">
-        <button type="button" className="btn primary" disabled={!selected.length || !canPick} onClick={sendSelected}>
+        <button type="button" className="btn primary" disabled={!selected.length || !canPickIncident} onClick={sendSelected}>
           <Send size={14} aria-hidden="true" />
           Dispatch{selected.length ? ` (${selected.length})` : ''}
         </button>

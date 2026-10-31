@@ -54,7 +54,7 @@ export interface Scenario {
   answers: Record<Exclude<Fact, 'location'>, string>;
 }
 
-export type UnitStatus = 'available' | 'enroute' | 'onscene';
+export type UnitStatus = 'available' | 'enroute' | 'onscene' | 'onstop';
 
 export interface Point {
   x: number;
@@ -118,3 +118,36 @@ export interface Score {
 }
 
 export type Phase = 'waiting' | 'ringing' | 'call' | 'incident' | 'closed';
+
+export type StopOutcome = 'routine' | 'expired' | 'warrant' | 'stolen' | 'felony';
+
+export interface Stop {
+  id: string;
+  unitId: string;
+  x: number;
+  y: number;
+  postal: number;
+  vehicle: string;
+  plate: string;
+  outcome: StopOutcome;
+  startedAt: number;
+  duration: number;
+  ackAt: number | null;
+  plateAskedAt: number | null;
+  plateAt: number | null;
+  plateResult: string | null;
+  backupAskedAt: number | null;
+  backupIds: string[];
+  backupSentAt: number | null;
+  backupArrivedAt: number | null;
+  reminded: boolean;
+  escalated: boolean;
+  closedAt: number | null;
+}
+
+export interface StopResult {
+  id: string;
+  unitId: string;
+  total: number;
+  notes: string[];
+}

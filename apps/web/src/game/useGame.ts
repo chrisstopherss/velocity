@@ -6,6 +6,9 @@ import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 const TICK_SECONDS = 1 / 30;
 
 export function hintFor(state: GameState): string {
+  const stop = state.stops.find((x) => x.closedAt === null);
+  if (stop && stop.ackAt === null) return `${stop.unitId} is calling in a traffic stop. Copy it.`;
+  if (stop && stop.plateAskedAt === null && state.phase !== 'ringing') return `Run the plate for ${stop.unitId}.`;
   switch (state.phase) {
     case 'waiting':
       return 'Next call is coming in. Check the unit board while you wait.';
@@ -25,7 +28,7 @@ export function hintFor(state: GameState): string {
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, () => {
     const seed = Math.floor(Math.random() * 2 ** 31);
-    return initialState(seed, chooseScenario(seed, 0));
+    return initialState(seed, chooseScenario(seed, 0), true);
   });
   const [selected, setSelected] = useState<string[]>([]);
   const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
@@ -64,6 +67,8 @@ export function useGame() {
     setSelected((cur) => (cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]));
   }, []);
 
+  const clearSelected = useCallback(() => setSelected([]), []);
+
   const sendSelected = useCallback(() => {
     if (!selected.length) return;
     dispatch({ type: 'dispatch', unitIds: selected });
@@ -87,7 +92,7 @@ export function useGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sendSelected]);
 
-  return { state, dispatch, selected, toggle, sendSelected, say, ai, hint: hintFor(state) };
+  return { state, dispatch, selected, toggle, clearSelected, sendSelected, say, ai, hint: hintFor(state) };
 }
 
 export type GameApi = ReturnType<typeof useGame>;

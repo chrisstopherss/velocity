@@ -6,7 +6,8 @@ import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import type { Point } from '../game/types';
 import { Panel } from '../ui/Panel';
-import { IncidentMarker, UnitMarker } from './MapMarkers';
+import { IncidentMarker, StopMarker, UnitMarker } from './MapMarkers';
+import { StopCard } from './StopCard';
 import { RouteLine } from './RouteLine';
 
 const MAP_SIZE = 1932;
@@ -211,10 +212,17 @@ export function MapView({ g }: { g: GameApi }) {
           <IncidentMarker x={incidentPostal.x} y={incidentPostal.y} priority={state.incident.priority} scale={scale} />
         ) : null}
 
+        {state.stops
+          .filter((x) => x.closedAt === null)
+          .map((x) => (
+            <StopMarker key={x.id} x={x.x} y={x.y} scale={scale} />
+          ))}
+
         {state.units.map((u) => (
           <UnitMarker key={u.id} unit={u} scale={scale} />
         ))}
       </svg>
+      <StopCard g={g} />
     </Panel>
   );
 }

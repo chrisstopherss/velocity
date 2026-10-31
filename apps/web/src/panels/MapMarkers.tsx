@@ -94,3 +94,16 @@ export function IncidentMarker({ x, y, priority, scale }: { x: number; y: number
     </g>
   );
 }
+
+export function StopMarker({ x, y, scale }: { x: number; y: number; scale: number }) {
+  return (
+    <g transform={`translate(${x} ${y}) scale(${scale})`}>
+      <circle r={17} fill="#0b0c0f" stroke="#f5a54a" strokeWidth={2.5} />
+      <svg x={-9} y={-9} width={18} height={18} viewBox="0 0 24 24" fill="none" stroke="#f5a54a" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2" />
+        <circle cx={6.5} cy={16.5} r={2.5} />
+        <circle cx={16.5} cy={16.5} r={2.5} />
+      </svg>
+    </g>
+  );
+}
