@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { answerFor, factOrder, scenarios, startingUnits } from '../data/content';
-import { postalById } from '../data/postals';
+import { getErlcLocation } from '../data/erlcLocation';
+import { postalById, postals } from '../data/postals';
 import { buildGraph, routeBetween } from './routing';
 import { etaSeconds, routeToPostal, stepUnit } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
@@ -47,6 +48,30 @@ describe('data', () => {
       const street = postalById.get(s.truth.postal)?.street;
       expect(answer).toContain(String(s.truth.postal));
       if (street) expect(answer).toContain(street);
+    }
+  });
+});
+
+describe('erlc location lookup', () => {
+  it('finds the street, building and postal for a position', () => {
+    expect(getErlcLocation(1536.96, 4453.76)).toEqual({ street: 'Main Street', building: '2001', postal: '201' });
+  });
+
+  it('returns null off the map and for bad input', () => {
+    expect(getErlcLocation(-5, 100)).toBeNull();
+    expect(getErlcLocation(Number.NaN, 1000)).toBeNull();
+  });
+
+  it('allows any single field to be missing', () => {
+    const loc = getErlcLocation(3000, 4000);
+    expect(loc).not.toBeNull();
+    expect(Object.values(loc!).some((v) => v === null)).toBe(true);
+  });
+
+  it('puts every postal in its own postal code', () => {
+    for (const p of postals) {
+      const [x, y] = [(p.x - 3.5) / 0.3589, (p.y - 2.8) / 0.3598];
+      expect(getErlcLocation(x, y)?.postal).toBe(String(p.id));
     }
   });
 });

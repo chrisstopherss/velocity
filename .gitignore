@@ -14,4 +14,3 @@ graphify-out/
 .obsidian/
 *.tsbuildinfo
 .railway/
-scripts/.cache/

@@ -16,7 +16,6 @@ export interface Postal {
   x: number;
   y: number;
   street?: string;
-  near?: string;
 }
 
 export interface Scenario {

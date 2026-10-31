@@ -89,7 +89,7 @@ export const scenarios: Scenario[] = [
   },
   {
     id: 'collision-209',
-    title: 'Crash on Freedom Avenue',
+    title: 'Crash on Southern Avenue',
     caller: 'Dana R.',
     ringAfter: 3,
     opening: 'There has been a crash at the intersection, one car is on its side!',
@@ -108,7 +108,7 @@ export function callerLocation(postal: number): string {
   const p = postalById.get(postal);
   if (!p) return `The postal is ${postal}.`;
   const where = p.street ?? 'the area';
-  return p.near ? `I am on ${where}, near ${p.near}. The postal is ${postal}.` : `I am on ${where}. The postal is ${postal}.`;
+  return `I am on ${where}. The postal is ${postal}.`;
 }
 
 export function answerFor(scenario: Scenario, fact: Fact): string {

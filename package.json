@@ -15,6 +15,7 @@
     "dev:server": "npm run dev -w apps/server",
     "build": "npm run build -w apps/web && npm run build -w apps/server",
     "start": "node apps/server/dist/index.js",
+    "build:postals": "tsx scripts/build-postals.ts",
     "test": "npm run test -w apps/web && npm run test -w apps/server",
     "typecheck": "npm run typecheck -w apps/web && npm run typecheck -w apps/server"
   }
