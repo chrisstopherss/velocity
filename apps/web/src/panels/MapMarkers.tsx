@@ -1,8 +1,26 @@
-import { ChevronsUp, Shield, Star, type LucideIcon } from 'lucide-react';
+import type { ReactNode } from 'react';
 import type { Agency, Priority, Unit } from '../game/types';
 
 export const agencyColor: Record<Agency, string> = { PD: '#3b82f6', SO: '#0f9f6e', SP: '#c9791a' };
-const agencyIcon: Record<Agency, LucideIcon> = { PD: Shield, SO: Star, SP: ChevronsUp };
+export const agencyIcons: Record<Agency, ReactNode> = {
+  PD: (
+    <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" />
+  ),
+  SO: (
+    <>
+      <path d="M12 2Q14.5 7.67 20.66 7Q17 12 20.66 17Q14.5 16.33 12 22Q9.5 16.33 3.34 17Q7 12 3.34 7Q9.5 7.67 12 2Z" />
+      <circle cx={12} cy={12} r={2.8} />
+    </>
+  ),
+  SP: (
+    <>
+      <path d="M3.5 13.5V10c0-1.4 1.3-2.1 2-2.5l5.5-3.1a2 2 0 0 1 2 0l5.5 3.1c.7.4 2 1.1 2 2.5v3.5" />
+      <path d="M5 14h14" />
+      <path d="M5 14c-.6.5-.6 1.2-.6 2v1.7c0 .7.5 1.2 1.2 1.4L12 20.6l6.4-1.5c.7-.2 1.2-.7 1.2-1.4V16c0-.8 0-1.5-.6-2" />
+      <path strokeWidth={1.6} d="M12 6.9l2 .9v1.7c0 1.2-.9 2-2 2.4-1.1-.4-2-1.2-2-2.4V7.8z" />
+    </>
+  ),
+};
 
 export const priorityStyle: Record<Priority, { fill: string; ink: string }> = {
   1: { fill: '#d7414d', ink: '#ffffff' },
@@ -21,7 +39,6 @@ export function headingOf(unit: Pick<Unit, 'x' | 'y' | 'status' | 'route'>): num
 }
 
 export function UnitMarker({ unit, scale }: { unit: Unit; scale: number }) {
-  const Icon = agencyIcon[unit.agency];
   const heading = headingOf(unit);
   const r = 14;
   return (
@@ -39,7 +56,20 @@ export function UnitMarker({ unit, scale }: { unit: Unit; scale: number }) {
       ) : null}
       <circle r={r} fill={agencyColor[unit.agency]} stroke="#0b0c0f" strokeWidth={2.5} />
       <circle r={r - 3.5} fill="none" stroke="#ffffff" strokeOpacity={0.5} strokeWidth={1} />
-      <Icon x={-7} y={-7} size={14} color="#ffffff" strokeWidth={2.4} />
+      <svg
+        x={-8}
+        y={-8}
+        width={16}
+        height={16}
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#ffffff"
+        strokeWidth={2.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        {agencyIcons[unit.agency]}
+      </svg>
       <text y={-(r + 12)} textAnchor="middle" fontSize={13} className="map-label">
         {unit.name}
       </text>

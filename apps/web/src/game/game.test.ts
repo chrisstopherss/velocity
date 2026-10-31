@@ -3,7 +3,7 @@ import { answerFor, factOrder, scenarios, startingUnits } from '../data/content'
 import { getErlcLocation } from '../data/erlcLocation';
 import { postalById, postals } from '../data/postals';
 import { rawRoads } from '../data/roads.data';
-import { agencyColor, headingOf, priorityStyle } from '../panels/MapMarkers';
+import { agencyColor, agencyIcons, headingOf, priorityStyle } from '../panels/MapMarkers';
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
@@ -349,6 +349,9 @@ describe('map markers', () => {
 
   it('has a colour for every priority and agency', () => {
     for (const p of [1, 2, 3, 4] as const) expect(priorityStyle[p].fill).toMatch(/^#/);
-    for (const a of ['PD', 'SO', 'SP'] as const) expect(agencyColor[a]).toMatch(/^#/);
+    for (const a of ['PD', 'SO', 'SP'] as const) {
+      expect(agencyColor[a]).toMatch(/^#/);
+      expect(agencyIcons[a]).toBeTruthy();
+    }
   });
 });

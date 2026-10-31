@@ -4,7 +4,7 @@ import { Budget } from './budget.js';
 import { loadAiConfig, type AiConfig } from './config.js';
 import { buildMessages, parseReply, requestBody, type Complete } from './caller.js';
 import { clientIp } from './ip.js';
-import { deflection, injecting, unsafe } from './safety.js';
+import { deflection, injecting, unclear, unsafe } from './safety.js';
 
 const config: AiConfig = {
   apiKey: 'test-key',
@@ -120,6 +120,15 @@ describe('prompt', () => {
       told: ['weapons'],
     });
     expect(parseReply('not json')).toBeNull();
+    expect(parseReply('{"say":"I am in a grey hoodie and jeans, please hurry and send someone to the plaza, I can hear')).toEqual({
+      say: 'I am in a grey hoodie and jeans, please hurry and send someone to the plaza, I can hear',
+      told: [],
+    });
+    expect(parseReply('{"say":"Jeans.","told":["suspect","bogus"')).toEqual({ say: 'Jeans.', told: [] });
+    expect(parseReply('{"say":"She said \\"stop\\" twice.","told":["nature"]}')).toEqual({
+      say: 'She said "stop" twice.',
+      told: ['nature'],
+    });
     expect(parseReply('{"say":""}')).toBeNull();
   });
 });
@@ -157,6 +166,28 @@ describe('POST /api/caller', () => {
       expect(res.json()).toMatchObject({ say: deflection, told: [] });
     }
     expect(f.calls).toHaveLength(0);
+  });
+
+  it('keeps a cut off reply instead of falling back', async () => {
+    const f = fake('{"say":"Just jeans and a work shirt, I think, please send some', 70);
+    const res = await post(await appWith(f.complete), { ...valid, message: 'What are you wearing?' });
+    expect(res.json()).toMatchObject({ say: 'Just jeans and a work shirt, I think, please send some' });
+  });
+
+  it('asks the player to repeat when the reply is unusable, not the safety line', async () => {
+    const f = fake('???');
+    const res = await post(await appWith(f.complete), valid);
+    expect(res.json().say).toBe(unclear);
+    expect(res.json().say).not.toBe(deflection);
+  });
+
+  it('lets small talk about the caller through to the model', async () => {
+    const f = fake('{"say":"A work shirt and jeans.","told":[]}');
+    const res = await post(await appWith(f.complete), { ...valid, message: 'What are you wearing?' });
+    expect(res.json().say).toBe('A work shirt and jeans.');
+    expect(f.calls).toHaveLength(1);
+    const messages = f.calls[0].messages as { content: string }[];
+    expect(messages[0].content).toContain('what you are wearing');
   });
 
   it('replaces an unsafe model reply', async () => {

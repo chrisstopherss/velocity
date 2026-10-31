@@ -31,8 +31,9 @@ export function buildMessages(req: CallerRequest): { role: string; content: stri
   const brief = briefs[req.scenarioId];
   const system = [
     `You play ${brief.name}, a 911 caller in a dispatcher training game, ${brief.mood}.`,
-    'Reply as json: {"say":"one or two short sentences","told":["fact keys you just gave away"]}.',
-    'Answer only what the dispatcher asks. Do not volunteer everything. For anything not listed below say you do not know.',
+    'Reply as json: {"say":"at most 25 words","told":["fact keys you just gave away"]}.',
+    'Answer only what the dispatcher asks. Do not volunteer everything. For anything about the emergency that is not listed below say you do not know.',
+    'Small questions about yourself, like what you are wearing or your name, are normal: answer briefly with ordinary adult details, then go back to the emergency.',
     `location: ${req.location}`,
     ...Object.entries(brief.facts).map(([k, v]) => `${k}: ${v}`),
     `told may only use: ${factKeys.join(', ')}.`,
@@ -53,18 +54,47 @@ export function estimateTokens(messages: { content: string }[], maxOutput: numbe
   return Math.ceil(chars / 3) + maxOutput;
 }
 
+function clean(say: string): string | null {
+  const text = say.trim().slice(0, MAX_SAY);
+  return text || null;
+}
+
+function facts(list: unknown): FactKey[] {
+  return Array.isArray(list) ? [...new Set(list.filter((k): k is FactKey => factKeys.includes(k as FactKey)))] : [];
+}
+
+// a reply cut off by the token limit still has its first words, keep them
+function salvage(text: string): CallerReply | null {
+  const m = /"say"\s*:\s*"((?:[^"\\]|\\.)*)/.exec(text);
+  if (!m) return null;
+  let say = m[1];
+  try {
+    say = JSON.parse(`"${m[1]}"`) as string;
+  } catch {
+    say = m[1].replace(/\\$/, '');
+  }
+  const cleaned = clean(say);
+  if (!cleaned) return null;
+  const told = /"told"\s*:\s*(\[[^\]]*\])/.exec(text);
+  let list: unknown = [];
+  try {
+    list = told ? JSON.parse(told[1]) : [];
+  } catch {
+    list = [];
+  }
+  return { say: cleaned, told: facts(list) };
+}
+
 export function parseReply(raw: string): CallerReply | null {
   const text = raw.trim();
   if (!text) return null;
   try {
     const data = JSON.parse(text) as { say?: unknown; told?: unknown };
-    if (typeof data.say !== 'string' || !data.say.trim()) return null;
-    const told = Array.isArray(data.told)
-      ? [...new Set(data.told.filter((k): k is FactKey => factKeys.includes(k as FactKey)))]
-      : [];
-    return { say: data.say.trim().slice(0, MAX_SAY), told };
+    if (typeof data.say !== 'string') return null;
+    const say = clean(data.say);
+    return say ? { say, told: facts(data.told) } : null;
   } catch {
-    return null;
+    return salvage(text);
   }
 }
 

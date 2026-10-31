@@ -17,3 +17,5 @@ export function injecting(text: string): boolean {
 }
 
 export const deflection = 'I just need help with the emergency, can you send someone?';
+
+export const unclear = 'Sorry, I did not catch that. Can you say it again?';

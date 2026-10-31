@@ -12,7 +12,7 @@ import {
 } from './caller.js';
 import type { AiConfig } from './config.js';
 import { clientIp } from './ip.js';
-import { deflection, injecting, unsafe } from './safety.js';
+import { deflection, injecting, unclear, unsafe } from './safety.js';
 
 export interface AiOptions {
   config: AiConfig;
@@ -70,9 +70,8 @@ export function registerCaller(app: FastifyInstance, ai: AiOptions): void {
         const done = await complete(requestBody(config, messages));
         budget.record(ip, done.tokens);
         const parsed = parseReply(done.text);
-        if (!parsed || unsafe(parsed.say)) {
-          return { say: deflection, told: [], left: budget.left(ip) };
-        }
+        if (!parsed) return { say: unclear, told: [], left: budget.left(ip) };
+        if (unsafe(parsed.say)) return { say: deflection, told: [], left: budget.left(ip) };
         return { ...parsed, left: budget.left(ip) };
       } catch (err) {
         req.log.warn({ err: err instanceof Error ? err.message : 'provider error' }, 'caller request failed');
