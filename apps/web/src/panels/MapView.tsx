@@ -6,6 +6,7 @@ import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import type { Agency, Point } from '../game/types';
 import { Panel } from '../ui/Panel';
+import { RouteLine } from './RouteLine';
 
 const MAP_SIZE = 1932;
 const ASPECT = 1.6;
@@ -193,30 +194,17 @@ export function MapView({ g }: { g: GameApi }) {
           : null}
 
         {previews.map((p) => (
-          <polyline
-            key={`preview-${p.id}`}
-            points={p.points.map((r) => `${r.x},${r.y}`).join(' ')}
-            fill="none"
-            stroke="#ffffff"
-            strokeWidth={4 * scale}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            opacity={0.9}
-          />
+          <RouteLine key={`preview-${p.id}`} ahead={p.points} scale={scale} />
         ))}
 
         {state.units
           .filter((u) => u.status === 'enroute' && u.route.length)
           .map((u) => (
-            <polyline
+            <RouteLine
               key={`route-${u.id}`}
-              points={[`${u.x},${u.y}`, ...u.route.map((r) => `${r.x},${r.y}`)].join(' ')}
-              fill="none"
-              stroke={agencyColor[u.agency]}
-              strokeWidth={3 * scale}
-              strokeDasharray={`${9 * scale} ${7 * scale}`}
-              strokeLinejoin="round"
-              opacity={0.85}
+              ahead={[{ x: u.x, y: u.y }, ...u.route]}
+              trail={[...u.trail, { x: u.x, y: u.y }]}
+              scale={scale}
             />
           ))}
 

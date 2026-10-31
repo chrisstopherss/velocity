@@ -49,6 +49,7 @@ export interface Unit {
   x: number;
   y: number;
   route: Point[];
+  trail: Point[];
 }
 
 export interface RadioLine {

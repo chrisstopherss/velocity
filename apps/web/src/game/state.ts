@@ -169,7 +169,12 @@ export function reducer(state: GameState, action: Action): GameState {
       if (!ids.length) return state;
       const units = state.units.map((u) =>
         ids.includes(u.id)
-          ? { ...u, status: 'enroute' as const, route: routeToPostal(u, incident.postal) ?? [] }
+          ? {
+              ...u,
+              status: 'enroute' as const,
+              route: routeToPostal(u, incident.postal) ?? [],
+              trail: [{ x: u.x, y: u.y }],
+            }
           : u,
       );
       let next: GameState = {
@@ -202,7 +207,7 @@ export function reducer(state: GameState, action: Action): GameState {
         units: state.units,
       });
       const units = state.units.map((u) =>
-        incident.unitIds.includes(u.id) ? { ...u, status: 'available' as const, route: [] } : u,
+        incident.unitIds.includes(u.id) ? { ...u, status: 'available' as const, route: [], trail: [] } : u,
       );
       return withRadio({ ...state, phase: 'closed', score, units }, [
         ['DISP', `${incident.id} cleared.`],

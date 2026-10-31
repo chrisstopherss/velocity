@@ -5,7 +5,7 @@ import { postalById, postals } from '../data/postals';
 import { rawRoads } from '../data/roads.data';
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
-import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
+import { etaSeconds, formatEta, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
@@ -54,6 +54,15 @@ describe('data', () => {
   });
 });
 
+describe('eta text', () => {
+  it('shows minutes and padded seconds', () => {
+    expect(formatEta(14)).toBe('0:14');
+    expect(formatEta(65.4)).toBe('1:05');
+    expect(formatEta(0)).toBe('0:00');
+    expect(formatEta(-3)).toBe('0:00');
+  });
+});
+
 describe('erlc location lookup', () => {
   it('finds the street, building and postal for a position', () => {
     expect(getErlcLocation(1536.96, 4453.76)).toEqual({ street: 'Main Street', building: '2001', postal: '201' });
@@ -91,6 +100,27 @@ describe('movement', () => {
     const done = stepUnit(unit, 1000);
     expect(done.arrived).toBe(true);
     expect(done.unit).toMatchObject({ status: 'onscene', x: 700, y: 1300, route: [] });
+  });
+
+  it('remembers the corners it has passed and clears them on arrival', () => {
+    const unit = {
+      ...startingUnits()[0],
+      x: 0,
+      y: 0,
+      status: 'enroute' as const,
+      trail: [{ x: 0, y: 0 }],
+      route: [
+        { x: 60, y: 0 },
+        { x: 60, y: 60 },
+      ],
+    };
+    const mid = stepUnit(unit, 1.5).unit;
+    expect(mid.trail).toEqual([
+      { x: 0, y: 0 },
+      { x: 60, y: 0 },
+    ]);
+    const done = stepUnit(unit, 100).unit;
+    expect(done.trail).toEqual([]);
   });
 
   it('follows the corners of the route instead of cutting across', () => {

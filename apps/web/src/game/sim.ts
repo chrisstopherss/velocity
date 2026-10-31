@@ -27,6 +27,7 @@ export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean
   let { x, y } = unit;
   let budget = UNIT_SPEED * dt;
   let i = 0;
+  const passed: Point[] = [];
   while (i < unit.route.length) {
     const next = unit.route[i];
     const left = distance(x, y, next.x, next.y);
@@ -34,14 +35,16 @@ export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean
       const k = budget / left;
       x += (next.x - x) * k;
       y += (next.y - y) * k;
-      return { unit: { ...unit, x, y, route: unit.route.slice(i) }, arrived: false };
+      const trail = passed.length ? [...unit.trail, ...passed] : unit.trail;
+      return { unit: { ...unit, x, y, route: unit.route.slice(i), trail }, arrived: false };
     }
     budget -= left;
     x = next.x;
     y = next.y;
+    passed.push(next);
     i++;
   }
-  return { unit: { ...unit, x, y, route: [], status: 'onscene' }, arrived: true };
+  return { unit: { ...unit, x, y, route: [], trail: [], status: 'onscene' }, arrived: true };
 }
 
 export function nearestPostal(x: number, y: number): number | null {
@@ -62,4 +65,9 @@ export function formatClock(seconds: number): string {
   const mm = String(Math.floor(s / 60)).padStart(2, '0');
   const ss = String(s % 60).padStart(2, '0');
   return `${mm}:${ss}`;
+}
+
+export function formatEta(seconds: number): string {
+  const s = Math.max(0, Math.round(seconds));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 }
