@@ -12,21 +12,21 @@ function fakeWebDir() {
 
 describe('server', () => {
   it('answers the health check', async () => {
-    const app = await buildApp({ webDir: fakeWebDir() });
+    const app = await buildApp({ webDir: fakeWebDir(), ai: null });
     const res = await app.inject({ method: 'GET', url: '/api/health' });
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toEqual({ ok: true, name: 'velocity' });
+    expect(res.json()).toEqual({ ok: true, name: 'velocity', ai: false });
   });
 
   it('serves the app for unknown paths', async () => {
-    const app = await buildApp({ webDir: fakeWebDir() });
+    const app = await buildApp({ webDir: fakeWebDir(), ai: null });
     const res = await app.inject({ method: 'GET', url: '/some/page' });
     expect(res.statusCode).toBe(200);
     expect(res.body).toContain('velocity');
   });
 
   it('returns 404 json for unknown api routes', async () => {
-    const app = await buildApp({ webDir: fakeWebDir() });
+    const app = await buildApp({ webDir: fakeWebDir(), ai: null });
     const res = await app.inject({ method: 'GET', url: '/api/nope' });
     expect(res.statusCode).toBe(404);
   });

@@ -37,6 +37,11 @@ export interface Scenario {
 
 export type UnitStatus = 'available' | 'enroute' | 'onscene';
 
+export interface Point {
+  x: number;
+  y: number;
+}
+
 export interface Unit {
   id: string;
   name: string;
@@ -44,8 +49,7 @@ export interface Unit {
   status: UnitStatus;
   x: number;
   y: number;
-  targetX: number | null;
-  targetY: number | null;
+  route: Point[];
 }
 
 export interface RadioLine {
@@ -57,7 +61,7 @@ export interface RadioLine {
 }
 
 export interface TranscriptLine {
-  from: 'caller' | 'you';
+  from: 'caller' | 'you' | 'system';
   text: string;
 }
 

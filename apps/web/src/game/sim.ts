@@ -1,5 +1,6 @@
 import { postalById } from '../data/postals';
-import type { Unit } from './types';
+import { roadGraph, routeBetween, type RoadGraph } from './routing';
+import type { Point, Unit } from './types';
 
 export const UNIT_SPEED = 60;
 
@@ -7,29 +8,40 @@ export function distance(ax: number, ay: number, bx: number, by: number): number
   return Math.hypot(bx - ax, by - ay);
 }
 
-export function etaSeconds(unit: Pick<Unit, 'x' | 'y'>, postal: number): number | null {
+export function routeToPostal(unit: Pick<Unit, 'x' | 'y'>, postal: number, graph: RoadGraph = roadGraph): Point[] | null {
   const p = postalById.get(postal);
   if (!p) return null;
-  return distance(unit.x, unit.y, p.x, p.y) / UNIT_SPEED;
+  return routeBetween(graph, { x: unit.x, y: unit.y }, { x: p.x, y: p.y }).points.slice(1);
+}
+
+export function etaSeconds(unit: Pick<Unit, 'x' | 'y'>, postal: number, graph: RoadGraph = roadGraph): number | null {
+  const p = postalById.get(postal);
+  if (!p) return null;
+  return routeBetween(graph, { x: unit.x, y: unit.y }, { x: p.x, y: p.y }).length / UNIT_SPEED;
 }
 
 export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean } {
-  if (unit.status !== 'enroute' || unit.targetX === null || unit.targetY === null) {
+  if (unit.status !== 'enroute' || !unit.route.length) {
     return { unit, arrived: false };
   }
-  const left = distance(unit.x, unit.y, unit.targetX, unit.targetY);
-  const step = UNIT_SPEED * dt;
-  if (step >= left) {
-    return {
-      unit: { ...unit, x: unit.targetX, y: unit.targetY, targetX: null, targetY: null, status: 'onscene' },
-      arrived: true,
-    };
+  let { x, y } = unit;
+  let budget = UNIT_SPEED * dt;
+  let i = 0;
+  while (i < unit.route.length) {
+    const next = unit.route[i];
+    const left = distance(x, y, next.x, next.y);
+    if (left > budget) {
+      const k = budget / left;
+      x += (next.x - x) * k;
+      y += (next.y - y) * k;
+      return { unit: { ...unit, x, y, route: unit.route.slice(i) }, arrived: false };
+    }
+    budget -= left;
+    x = next.x;
+    y = next.y;
+    i++;
   }
-  const k = step / left;
-  return {
-    unit: { ...unit, x: unit.x + (unit.targetX - unit.x) * k, y: unit.y + (unit.targetY - unit.y) * k },
-    arrived: false,
-  };
+  return { unit: { ...unit, x, y, route: [], status: 'onscene' }, arrived: true };
 }
 
 export function nearestPostal(x: number, y: number): number | null {

@@ -287,6 +287,55 @@ textarea {
   background: rgba(79, 140, 255, 0.18);
 }
 
+.transcript p.system {
+  align-self: center;
+  max-width: 100%;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.ask-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.ask-form input {
+  flex: 1;
+  min-width: 0;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--panel2);
+}
+
+.ask-form input:focus-visible {
+  outline: 1px solid var(--acc);
+}
+
+.ask-form button {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 9px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--panel2);
+  cursor: pointer;
+}
+
+.ask-form button:disabled,
+.ask-form input:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.ask-meta {
+  margin: 4px 0 0;
+  font-size: 11px;
+}
+
 .checklist {
   display: flex;
   flex-wrap: wrap;

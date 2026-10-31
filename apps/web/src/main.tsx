@@ -7,6 +7,7 @@ import '@fontsource-variable/inter/wght-italic.css';
 import './styles/base.css';
 import './styles/modern.css';
 import './styles/classic.css';
+import './styles/editor.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

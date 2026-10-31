@@ -1,7 +1,7 @@
 import { answerFor, factQuestions, scenarios, startingUnits, typeLabel } from '../data/content';
 import { postalById, postalLabel } from '../data/postals';
 import { scoreCall } from './scoring';
-import { stepUnit } from './sim';
+import { routeToPostal, stepUnit } from './sim';
 import type {
   Fact,
   Incident,
@@ -23,16 +23,23 @@ export interface GameState {
   answeredAt: number | null;
   asked: Fact[];
   transcript: TranscriptLine[];
+  typed: number;
+  pending: boolean;
   incident: Incident | null;
   units: Unit[];
   radio: RadioLine[];
   score: Score | null;
 }
 
+export const MAX_TYPED = 8;
+export const MAX_TYPED_CHARS = 140;
+
 export type Action =
   | { type: 'tick'; dt: number }
   | { type: 'answer' }
   | { type: 'ask'; fact: Fact }
+  | { type: 'say'; text: string }
+  | { type: 'reply'; call: number; text: string; told: Fact[]; system?: boolean }
   | { type: 'create'; draft: IncidentDraft }
   | { type: 'dispatch'; unitIds: string[] }
   | { type: 'clear' }
@@ -50,6 +57,8 @@ export function initialState(): GameState {
     answeredAt: null,
     asked: [],
     transcript: [],
+    typed: 0,
+    pending: false,
     incident: null,
     units: startingUnits(),
     radio: [],
@@ -114,6 +123,27 @@ export function reducer(state: GameState, action: Action): GameState {
         ],
       };
     }
+    case 'say': {
+      const text = action.text.trim().slice(0, MAX_TYPED_CHARS);
+      if ((state.phase !== 'call' && state.phase !== 'incident') || state.pending || !text) return state;
+      if (state.typed >= MAX_TYPED) return state;
+      return {
+        ...state,
+        pending: true,
+        typed: state.typed + 1,
+        transcript: [...state.transcript, { from: 'you', text }],
+      };
+    }
+    case 'reply': {
+      if (action.call !== state.callNumber || (state.phase !== 'call' && state.phase !== 'incident')) return state;
+      const asked = [...new Set([...state.asked, ...action.told])];
+      return {
+        ...state,
+        pending: false,
+        asked,
+        transcript: [...state.transcript, { from: action.system ? 'system' : 'caller', text: action.text }],
+      };
+    }
     case 'create': {
       if (state.phase !== 'call') return state;
       const { draft } = action;
@@ -138,7 +168,9 @@ export function reducer(state: GameState, action: Action): GameState {
       const ids = action.unitIds.filter((id) => state.units.some((u) => u.id === id && u.status === 'available'));
       if (!ids.length) return state;
       const units = state.units.map((u) =>
-        ids.includes(u.id) ? { ...u, status: 'enroute' as const, targetX: target.x, targetY: target.y } : u,
+        ids.includes(u.id)
+          ? { ...u, status: 'enroute' as const, route: routeToPostal(u, incident.postal) ?? [] }
+          : u,
       );
       let next: GameState = {
         ...state,
@@ -170,7 +202,7 @@ export function reducer(state: GameState, action: Action): GameState {
         units: state.units,
       });
       const units = state.units.map((u) =>
-        incident.unitIds.includes(u.id) ? { ...u, status: 'available' as const, targetX: null, targetY: null } : u,
+        incident.unitIds.includes(u.id) ? { ...u, status: 'available' as const, route: [] } : u,
       );
       return withRadio({ ...state, phase: 'closed', score, units }, [
         ['DISP', `${incident.id} cleared.`],
@@ -189,6 +221,8 @@ export function reducer(state: GameState, action: Action): GameState {
         answeredAt: null,
         asked: [],
         transcript: [],
+        typed: 0,
+        pending: false,
         incident: null,
         score: null,
       };

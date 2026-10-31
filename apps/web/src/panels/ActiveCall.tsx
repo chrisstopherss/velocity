@@ -1,7 +1,8 @@
-import { Check, ClipboardList, Headset, PhoneCall } from 'lucide-react';
+import { Check, ClipboardList, Headset, PhoneCall, Send } from 'lucide-react';
 import { useState } from 'react';
 import { factLabels, factOrder, factQuestions, incidentTypes, priorities } from '../data/content';
 import { postalById, postalDetail } from '../data/postals';
+import { MAX_TYPED, MAX_TYPED_CHARS } from '../game/state';
 import type { GameApi } from '../game/useGame';
 import type { IncidentTypeId, Priority } from '../game/types';
 import { Panel } from '../ui/Panel';
@@ -9,6 +10,43 @@ import { Select } from '../ui/Select';
 
 const typeOptions = incidentTypes.map((t) => ({ value: t.id, label: t.label }));
 const priorityOptions = priorities.map((p) => ({ value: p.id, label: p.label }));
+
+function AskBox({ g }: { g: GameApi }) {
+  const { state, ai, say } = g;
+  const [text, setText] = useState('');
+  if (!ai.enabled) return null;
+
+  const used = ai.left === 0 || state.typed >= MAX_TYPED;
+  const locked = state.pending || used;
+  return (
+    <>
+      <form
+        className="ask-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (locked || !text.trim()) return;
+          say(text);
+          setText('');
+        }}
+      >
+        <input
+          aria-label="Ask the caller"
+          placeholder={used ? 'No typed questions left' : 'Ask the caller anything'}
+          maxLength={MAX_TYPED_CHARS}
+          disabled={locked}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <button type="submit" aria-label="Send question" disabled={locked || !text.trim()}>
+          <Send size={14} aria-hidden="true" />
+        </button>
+      </form>
+      <p className="muted ask-meta">
+        {state.pending ? 'Caller is answering...' : `${state.typed}/${MAX_TYPED} typed questions this call`}
+      </p>
+    </>
+  );
+}
 
 function CallTaker({ g }: { g: GameApi }) {
   const { state, dispatch } = g;
@@ -45,6 +83,7 @@ function CallTaker({ g }: { g: GameApi }) {
           </p>
         ))}
       </div>
+      <AskBox g={g} />
       <ul className="checklist">
         {factOrder.map((f) => (
           <li key={f}>

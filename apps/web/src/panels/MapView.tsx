@@ -1,8 +1,9 @@
 import { CarFront, Locate, Map as MapIcon, MapPin, Maximize, Search } from 'lucide-react';
-import { useEffect, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { postalById } from '../data/postals';
+import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
-import type { Agency } from '../game/types';
+import type { Agency, Point } from '../game/types';
 import { Panel } from '../ui/Panel';
 
 const MAP_SIZE = 1932;
@@ -41,6 +42,18 @@ export function MapView({ g }: { g: GameApi }) {
 
   const incidentPostal = state.incident ? postalById.get(state.incident.postal) : undefined;
   const incidentId = state.incident?.id;
+
+  const previews = useMemo(() => {
+    if (state.phase !== 'incident' || !state.incident) return [];
+    const postal = state.incident.postal;
+    return state.units
+      .filter((u) => g.selected.includes(u.id) && u.status === 'available')
+      .map((u) => {
+        const route = routeToPostal(u, postal);
+        return route ? { id: u.id, points: [{ x: u.x, y: u.y }, ...route] } : null;
+      })
+      .filter((p): p is { id: string; points: Point[] } => p !== null);
+  }, [state.phase, state.incident, state.units, g.selected]);
 
   useEffect(() => {
     if (incidentPostal) setView(centerOn(incidentPostal.x, incidentPostal.y, 560));
@@ -135,6 +148,34 @@ export function MapView({ g }: { g: GameApi }) {
             <MapPin x={-11 * scale} y={-12 * scale} size={22 * scale} color="#fff" strokeWidth={2} />
           </g>
         ) : null}
+
+        {previews.map((p) => (
+          <polyline
+            key={`preview-${p.id}`}
+            points={p.points.map((r) => `${r.x},${r.y}`).join(' ')}
+            fill="none"
+            stroke="#ffffff"
+            strokeWidth={4 * scale}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            opacity={0.9}
+          />
+        ))}
+
+        {state.units
+          .filter((u) => u.status === 'enroute' && u.route.length)
+          .map((u) => (
+            <polyline
+              key={`route-${u.id}`}
+              points={[`${u.x},${u.y}`, ...u.route.map((r) => `${r.x},${r.y}`)].join(' ')}
+              fill="none"
+              stroke={agencyColor[u.agency]}
+              strokeWidth={3 * scale}
+              strokeDasharray={`${9 * scale} ${7 * scale}`}
+              strokeLinejoin="round"
+              opacity={0.85}
+            />
+          ))}
 
         {state.units.map((u) => (
           <g key={u.id} transform={`translate(${u.x} ${u.y})`}>

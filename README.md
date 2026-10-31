@@ -4,7 +4,7 @@ Velocity is a dispatch trainer for ER:LC. You sit in the dispatcher's chair, ans
 
 It is a training tool, not a real CAD. Nothing connects to a game server.
 
-This is early. Right now you get four scripted Beginner calls, a unit board, a radio log, a map with postal search, and a scorecard. AI callers, pursuits, traffic stops and voice are planned but not built.
+This is early. Right now you get four Beginner calls, a unit board, a radio log, a map with postal search, and a scorecard. Units drive along a road graph instead of cutting across the map, and you can type questions to the caller if the server has an AI key. Pursuits, traffic stops and voice are planned but not built.
 
 ## Two looks
 
@@ -49,6 +49,21 @@ npm run typecheck
 - `apps/server` is a small Fastify server. For now it serves the built web app and a health check at `/api/health`.
 
 The simulation runs in the browser. Postal numbers, street names and nearby landmarks come from CADLY's public map resolver, collected once with `scripts/cadly-scan.mjs` and turned into data by `scripts/build-postals.mjs`. The app does not call that API while you play. Postal positions on the map image are fitted from that data, so they are close but not exact. The resolver misspells a few street names, and those are corrected in the build script.
+
+## Roads
+
+Units follow a graph of roads (`apps/web/src/data/roads.data.ts`) and take the shortest path to the call. When you tick units to dispatch, the map draws each one's route first. The starting graph was traced from the map image and is rough in places, mostly on the cliffs and in the countryside. Open `/#roads` to fix it: click to add nodes, click two nodes to link or unlink them, drag to move, and the toolbar warns you about postals that can't be reached. Download the result and replace `roads.data.ts`.
+
+## AI callers
+
+The four callers can answer typed questions in character. Set `DEEPSEEK_API_KEY` on the server to turn it on, otherwise the box stays hidden and the quick question buttons still work. Anything you type is sent to the model provider along with the last few lines of the call, so don't type personal information.
+
+It is built to be cheap and hard to abuse:
+
+- Model is `deepseek-v4-flash` with thinking off and a 70 token reply limit. Override with `AI_MODEL`, `AI_BASE_URL` and `AI_MAX_OUTPUT_TOKENS` to use another OpenAI-compatible provider.
+- Each IP gets 12,000 tokens a day (`AI_IP_DAILY_TOKENS`), 5 requests a minute (`AI_PER_MINUTE`), and 8 typed questions per call. The whole server stops at 400,000 tokens a day (`AI_GLOBAL_DAILY_TOKENS`). Counters live in memory and reset on restart.
+- The server owns the call scripts, so a client can't send its own prompt. Messages with sexual content, or abuse involving children, or attempts to rewrite the caller's instructions, are turned away without calling the model, and the same filter runs on replies.
+- Set `TRUST_PROXY_HOPS` to the number of proxies in front of the server (default 1) so the limits see the real client address.
 
 ## Keys
 

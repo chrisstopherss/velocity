@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useReducer, useState } from 'react';
-import { initialState, reducer, type GameState } from './state';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { askCaller, fetchAiEnabled } from './ai';
+import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 
 const TICK_SECONDS = 0.1;
 
@@ -23,6 +24,32 @@ export function hintFor(state: GameState): string {
 export function useGame() {
   const [state, dispatch] = useReducer(reducer, undefined, initialState);
   const [selected, setSelected] = useState<string[]>([]);
+  const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
+  const latest = useRef(state);
+  latest.current = state;
+
+  useEffect(() => {
+    let live = true;
+    fetchAiEnabled().then((enabled) => live && setAi((cur) => ({ ...cur, enabled })));
+    return () => {
+      live = false;
+    };
+  }, []);
+
+  const say = useCallback(
+    (text: string) => {
+      const s = latest.current;
+      const message = text.trim();
+      const open = s.phase === 'call' || s.phase === 'incident';
+      if (!ai.enabled || ai.left === 0 || !message || !open || s.pending || s.typed >= MAX_TYPED) return;
+      dispatch({ type: 'say', text: message });
+      askCaller(s.scenario, message.slice(0, 140), s.transcript).then((res) => {
+        dispatch({ type: 'reply', call: s.callNumber, text: res.text, told: res.told, system: res.system });
+        setAi((cur) => ({ ...cur, left: res.left ?? cur.left }));
+      });
+    },
+    [ai.enabled, ai.left],
+  );
 
   useEffect(() => {
     const id = window.setInterval(() => dispatch({ type: 'tick', dt: TICK_SECONDS }), TICK_SECONDS * 1000);
@@ -56,7 +83,7 @@ export function useGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sendSelected]);
 
-  return { state, dispatch, selected, toggle, sendSelected, hint: hintFor(state) };
+  return { state, dispatch, selected, toggle, sendSelected, say, ai, hint: hintFor(state) };
 }
 
 export type GameApi = ReturnType<typeof useGame>;

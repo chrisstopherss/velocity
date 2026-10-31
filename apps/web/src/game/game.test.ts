@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { answerFor, factOrder, scenarios, startingUnits } from '../data/content';
 import { postalById } from '../data/postals';
-import { etaSeconds, stepUnit } from './sim';
-import { initialState, reducer, type Action, type GameState } from './state';
+import { buildGraph, routeBetween } from './routing';
+import { etaSeconds, routeToPostal, stepUnit } from './sim';
+import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
   return actions.reduce(reducer, state);
@@ -51,20 +52,84 @@ describe('data', () => {
 });
 
 describe('movement', () => {
-  it('moves a unit toward its target and marks it on scene', () => {
-    const unit = { ...startingUnits()[0], status: 'enroute' as const, targetX: 600, targetY: 1300 };
+  it('moves a unit along its route and marks it on scene', () => {
+    const route = [
+      { x: 600, y: 1300 },
+      { x: 700, y: 1300 },
+    ];
+    const unit = { ...startingUnits()[0], status: 'enroute' as const, route };
     const first = stepUnit(unit, 0.1);
     expect(first.arrived).toBe(false);
     expect(first.unit.x).not.toBe(unit.x);
     const done = stepUnit(unit, 1000);
     expect(done.arrived).toBe(true);
-    expect(done.unit.status).toBe('onscene');
+    expect(done.unit).toMatchObject({ status: 'onscene', x: 700, y: 1300, route: [] });
+  });
+
+  it('follows the corners of the route instead of cutting across', () => {
+    const unit = {
+      ...startingUnits()[0],
+      x: 0,
+      y: 0,
+      status: 'enroute' as const,
+      route: [
+        { x: 60, y: 0 },
+        { x: 60, y: 60 },
+      ],
+    };
+    const mid = stepUnit(unit, 1.5);
+    expect(mid.unit.x).toBe(60);
+    expect(mid.unit.y).toBeCloseTo(30);
+    expect(mid.unit.route).toHaveLength(1);
   });
 
   it('gives an eta only for known postals', () => {
     const unit = startingUnits()[0];
     expect(etaSeconds(unit, 322)).toBeGreaterThan(0);
     expect(etaSeconds(unit, 99999)).toBeNull();
+  });
+});
+
+describe('roads', () => {
+  const grid = buildGraph({
+    nodes: [
+      [0, 0],
+      [100, 0],
+      [100, 100],
+      [500, 500],
+    ],
+    edges: [
+      [0, 1],
+      [1, 2],
+    ],
+  });
+
+  it('routes around the corner and is longer than the straight line', () => {
+    const route = routeBetween(grid, { x: 0, y: 0 }, { x: 100, y: 100 });
+    expect(route.onRoad).toBe(true);
+    expect(route.length).toBeCloseTo(200);
+    expect(route.points[route.points.length - 1]).toEqual({ x: 100, y: 100 });
+  });
+
+  it('falls back to a straight line when the target is cut off', () => {
+    const route = routeBetween(grid, { x: 0, y: 0 }, { x: 500, y: 500 });
+    expect(route.onRoad).toBe(false);
+    expect(route.points).toHaveLength(2);
+  });
+
+  it('has no isolated postal in the shipped graph', () => {
+    const unit = { x: 600, y: 1300 };
+    for (const id of postalById.keys()) {
+      const eta = etaSeconds(unit, id);
+      expect(eta).not.toBeNull();
+      expect(Number.isFinite(eta)).toBe(true);
+    }
+  });
+
+  it('gives every postal a road route from the first unit', () => {
+    const unit = startingUnits()[0];
+    const onRoad = [...postalById.keys()].filter((id) => (routeToPostal(unit, id)?.length ?? 0) > 2);
+    expect(onRoad.length).toBeGreaterThan(postalById.size * 0.9);
   });
 });
 
@@ -88,6 +153,38 @@ describe('call flow', () => {
     const answered = run(untilRinging(initialState()), [{ type: 'answer' }, { type: 'ask', fact: 'weapons' }]);
     const again = reducer(answered, { type: 'ask', fact: 'weapons' });
     expect(again.transcript.length).toBe(answered.transcript.length);
+  });
+
+  it('takes a typed question, then the reply and the facts it gave away', () => {
+    const answered = run(untilRinging(initialState()), [{ type: 'answer' }]);
+    const asking = reducer(answered, { type: 'say', text: '  Any weapons?  ' });
+    expect(asking.pending).toBe(true);
+    expect(asking.typed).toBe(1);
+    expect(asking.transcript.at(-1)).toEqual({ from: 'you', text: 'Any weapons?' });
+    expect(reducer(asking, { type: 'say', text: 'again' })).toBe(asking);
+
+    const replied = reducer(asking, { type: 'reply', call: 0, text: 'No gun.', told: ['weapons'] });
+    expect(replied.pending).toBe(false);
+    expect(replied.asked).toContain('weapons');
+    expect(replied.transcript.at(-1)).toEqual({ from: 'caller', text: 'No gun.' });
+  });
+
+  it('caps typed questions and trims them', () => {
+    let s = run(untilRinging(initialState()), [{ type: 'answer' }]);
+    for (let i = 0; i < MAX_TYPED + 2; i++) {
+      s = reducer(reducer(s, { type: 'say', text: 'x'.repeat(300) }), { type: 'reply', call: 0, text: 'ok', told: [] });
+    }
+    expect(s.typed).toBe(MAX_TYPED);
+    expect(s.transcript.filter((t) => t.from === 'you').length).toBe(MAX_TYPED + 1);
+    expect(s.transcript.find((t) => t.text.startsWith('xxx'))!.text).toHaveLength(MAX_TYPED_CHARS);
+  });
+
+  it('ignores a late reply from a previous call and a say before answering', () => {
+    const waiting = initialState();
+    expect(reducer(waiting, { type: 'say', text: 'hello' })).toBe(waiting);
+    const asking = reducer(run(untilRinging(waiting), [{ type: 'answer' }]), { type: 'say', text: 'hi' });
+    const stale = reducer(asking, { type: 'reply', call: 5, text: 'late', told: ['nature'] });
+    expect(stale).toBe(asking);
   });
 
   it('scores a good call high and a careless call low', () => {
