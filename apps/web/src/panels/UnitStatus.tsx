@@ -10,7 +10,7 @@ const statusText: Record<Status, string> = {
   available: 'Available',
   enroute: 'En route',
   onscene: 'On scene',
-  onstop: 'On stop',
+  onstop: 'Busy',
 };
 
 export function UnitStatus({ g }: { g: GameApi }) {

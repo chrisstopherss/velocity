@@ -2,13 +2,25 @@ import { Phone } from 'lucide-react';
 import { typeLabel } from '../data/content';
 import { postalLabel } from '../data/postals';
 import { formatClock } from '../game/sim';
+import { isOpen, stopWhere } from '../game/stops';
+import type { Stop } from '../game/types';
 import type { GameApi } from '../game/useGame';
 import { Panel } from '../ui/Panel';
+
+function stopStatus(stop: Stop): string {
+  if (stop.ackAt === null) return 'New';
+  if (stop.backupArrivedAt !== null) return 'Backup on scene';
+  if (stop.backupSentAt !== null) return 'Backup sent';
+  if (stop.backupAskedAt !== null) return 'Backup requested';
+  if (stop.plateAskedAt !== null) return 'Plate run';
+  return 'Copied';
+}
 
 export function CallQueue({ g }: { g: GameApi }) {
   const { state } = g;
   const { incident, phase, clock } = state;
   const ringing = phase === 'ringing';
+  const stops = state.stops.filter(isOpen);
 
   return (
     <Panel title="Call queue" icon={<Phone size={16} aria-hidden="true" />} className="panel-queue">
@@ -46,7 +58,17 @@ export function CallQueue({ g }: { g: GameApi }) {
               <td>{incident.dispatchedAt === null ? 'Pending' : 'Dispatched'}</td>
             </tr>
           ) : null}
-          {!ringing && !incident ? (
+          {stops.map((stop) => (
+            <tr key={stop.id} className={stop.ackAt === null ? 'row-ring' : ''}>
+              <td>{stop.id}</td>
+              <td>Traffic stop</td>
+              <td>{stopWhere(stop)}</td>
+              <td>-</td>
+              <td>{formatClock(clock - stop.startedAt)}</td>
+              <td>{stopStatus(stop)}</td>
+            </tr>
+          ))}
+          {!ringing && !incident && !stops.length ? (
             <tr>
               <td colSpan={6} className="empty">
                 No calls right now.
