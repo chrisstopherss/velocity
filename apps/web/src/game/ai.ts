@@ -37,6 +37,7 @@ export async function askCaller(scenario: Scenario, message: string, transcript:
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
         scenarioId: scenario.id,
+        pick: scenario.pick,
         location: callerLocation(scenario.truth.postal),
         message,
         history,

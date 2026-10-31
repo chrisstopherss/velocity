@@ -22,7 +22,7 @@ export function hintFor(state: GameState): string {
 }
 
 export function useGame() {
-  const [state, dispatch] = useReducer(reducer, undefined, initialState);
+  const [state, dispatch] = useReducer(reducer, undefined, () => initialState(Math.floor(Math.random() * 2 ** 31)));
   const [selected, setSelected] = useState<string[]>([]);
   const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
   const latest = useRef(state);

@@ -9,7 +9,15 @@ export type IncidentTypeId =
   | 'burglary'
   | 'assault'
   | 'welfare_check'
-  | 'alarm';
+  | 'alarm'
+  | 'robbery'
+  | 'reckless_driver'
+  | 'hit_and_run'
+  | 'noise_disturbance'
+  | 'vehicle_theft'
+  | 'trespass'
+  | 'suspicious_person'
+  | 'disabled_vehicle';
 
 export interface Postal {
   id: number;
@@ -18,8 +26,15 @@ export interface Postal {
   street?: string;
 }
 
+export interface ScenarioPick {
+  caller: number;
+  variant: number;
+  place: number;
+}
+
 export interface Scenario {
   id: string;
+  pick: ScenarioPick;
   title: string;
   caller: string;
   ringAfter: number;

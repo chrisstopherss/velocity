@@ -1,4 +1,5 @@
-import { answerFor, factQuestions, scenarios, startingUnits, typeLabel } from '../data/content';
+import { answerFor, factQuestions, startingUnits, typeLabel } from '../data/content';
+import { chooseScenario, firstScenario } from '../data/scenarios';
 import { postalById, postalLabel } from '../data/postals';
 import { scoreCall } from './scoring';
 import { routeToPostal, stepUnit } from './sim';
@@ -15,6 +16,7 @@ import type {
 } from './types';
 
 export interface GameState {
+  seed: number;
   clock: number;
   phase: Phase;
   callNumber: number;
@@ -46,9 +48,10 @@ export type Action =
   | { type: 'next' }
   | { type: 'reset' };
 
-export function initialState(): GameState {
-  const scenario = scenarios[0];
+export function initialState(seed = 1): GameState {
+  const scenario = firstScenario();
   return {
+    seed,
     clock: 0,
     phase: 'waiting',
     callNumber: 0,
@@ -216,7 +219,7 @@ export function reducer(state: GameState, action: Action): GameState {
     case 'next': {
       if (state.phase !== 'closed') return state;
       const callNumber = state.callNumber + 1;
-      const scenario = scenarios[callNumber % scenarios.length];
+      const scenario = chooseScenario(state.seed, callNumber, state.scenario.id);
       return {
         ...state,
         phase: 'waiting',

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { answerFor, factOrder, scenarios, startingUnits } from '../data/content';
+import { answerFor, factOrder, incidentTypes, startingUnits } from '../data/content';
+import { chooseScenario, firstScenario, instantiate, templates } from '../data/scenarios';
 import { getErlcLocation } from '../data/erlcLocation';
 import { postalById, postals } from '../data/postals';
 import { rawRoads } from '../data/roads.data';
@@ -19,7 +20,7 @@ function untilRinging(state: GameState): GameState {
 
 describe('data', () => {
   it('has a postal for every scenario and starting unit', () => {
-    for (const s of scenarios) expect(postalById.has(s.truth.postal)).toBe(true);
+    expect(postalById.has(firstScenario().truth.postal)).toBe(true);
     expect(startingUnits().length).toBeGreaterThan(0);
   });
 
@@ -46,12 +47,76 @@ describe('data', () => {
   });
 
   it('builds the caller location from the real postal data', () => {
-    for (const s of scenarios) {
+    for (const s of everyCall()) {
       const answer = answerFor(s, 'location');
       const street = postalById.get(s.truth.postal)?.street;
       expect(answer).toContain(String(s.truth.postal));
       if (street) expect(answer).toContain(street);
     }
+  });
+});
+
+function everyCall() {
+  return templates.flatMap((t) =>
+    t.callers.flatMap((_, caller) =>
+      t.variants.flatMap((_v, variant) => t.places.map((_p, place) => instantiate(t, { caller, variant, place }))),
+    ),
+  );
+}
+
+describe('scenario pack', () => {
+  it('has enough calls to stay fresh', () => {
+    expect(templates.length).toBeGreaterThanOrEqual(16);
+    expect(templates.every((t) => t.variants.length >= 3 && t.callers.length >= 3 && t.places.length >= 6)).toBe(true);
+  });
+
+  it('only uses known types, real postals and complete answers', () => {
+    const types = new Set(incidentTypes.map((t) => t.id));
+    for (const t of templates) {
+      expect(types.has(t.type)).toBe(true);
+      expect([1, 2, 3, 4]).toContain(t.priority);
+      expect(t.minUnits).toBeGreaterThan(0);
+      expect(t.ringAfter[0]).toBeLessThanOrEqual(t.ringAfter[1]);
+      for (const place of t.places) expect(postalById.has(place), `${t.id} postal ${place}`).toBe(true);
+      for (const v of t.variants) {
+        for (const text of Object.values(v)) expect(text.trim().length).toBeGreaterThanOrEqual(3);
+      }
+    }
+  });
+
+  it('has a template for every incident type', () => {
+    const used = new Set(templates.map((t) => t.type));
+    for (const type of incidentTypes) expect(used.has(type.id), type.id).toBe(true);
+  });
+
+  it('has unique template ids', () => {
+    expect(new Set(templates.map((t) => t.id)).size).toBe(templates.length);
+  });
+
+  it('starts with the same easy call and then varies', () => {
+    const first = firstScenario();
+    expect(first.id).toBe('shots-fired');
+    expect(first.truth.postal).toBe(322);
+    const ids = new Set<string>();
+    const picks = new Set<string>();
+    let previous = first.id;
+    for (let n = 1; n <= 60; n++) {
+      const s = chooseScenario(7, n, previous);
+      expect(s.id).not.toBe(previous);
+      expect(s.ringAfter).toBeGreaterThanOrEqual(3);
+      previous = s.id;
+      ids.add(s.id);
+      picks.add(JSON.stringify([s.id, s.pick]));
+    }
+    expect(ids.size).toBeGreaterThanOrEqual(12);
+    expect(picks.size).toBeGreaterThan(40);
+  });
+
+  it('gives the same call for the same seed and a different one for another seed', () => {
+    expect(chooseScenario(5, 3)).toEqual(chooseScenario(5, 3));
+    const a = JSON.stringify(Array.from({ length: 8 }, (_, n) => chooseScenario(5, n).pick));
+    const b = JSON.stringify(Array.from({ length: 8 }, (_, n) => chooseScenario(99, n).pick));
+    expect(a).not.toBe(b);
   });
 });
 
@@ -313,7 +378,7 @@ describe('call flow', () => {
     expect(closed.units.find((u) => u.id === '1A-12')!.status).toBe('available');
     const next = reducer(closed, { type: 'next' });
     expect(next.phase).toBe('waiting');
-    expect(next.scenario.id).toBe(scenarios[1].id);
+    expect(next.scenario.id).not.toBe(closed.scenario.id);
     expect(next.incident).toBeNull();
   });
 

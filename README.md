@@ -65,6 +65,12 @@ It is built to be cheap and hard to abuse:
 - The server owns the call scripts, so a client can't send its own prompt. Messages with sexual content, or abuse involving children, or attempts to rewrite the caller's instructions, are turned away without calling the model, and the same filter runs on replies.
 - Set `TRUST_PROXY_HOPS` to the number of proxies in front of the server (default 1) so the limits see the real client address.
 
+## Calls
+
+Calls live in `packages/scenarios/scenarios.json`, which both the game and the AI server read. Each template is one kind of call (shots fired, burglary, robbery and so on) with a type, priority, the agencies that fit, and how many units it needs. A template also has a few callers, a few variants and a list of postals where it can happen. Each variant is a coherent set of answers: the opening line and what the caller says about the nature of the call, weapons, injuries, the suspect and their own safety. When a call comes in, the game picks a template, then a caller, a variant and a place, so the same kind of call plays differently each time. The first call of a shift is always the same easy one.
+
+To add a call, add a template and run the tests. They check that the postals exist, every answer is filled in, and the text passes the content filter. Calls are for adults only: no children, nothing sexual, no gore, no self-harm.
+
 ## Keys
 
 - F1 answers the ringing call
@@ -74,7 +80,8 @@ It is built to be cheap and hard to abuse:
 ## Credits
 
 - The map image is from ER:LC. It belongs to its creators. Velocity is not affiliated with or endorsed by ER:LC, its developers or Roblox.
-- Icons are from the Lucide set (ISC license).
+- The road lines, postals and buildings in `erlc-map-data.json` were provided by finalcutpro.
+- Icons are from the Lucide set (ISC license), apart from the unit icons on the map.
 
 ## License
 

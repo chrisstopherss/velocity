@@ -1,4 +1,4 @@
-import { briefs, factKeys, type FactKey } from './briefs.js';
+import { briefFor, factKeys, type FactKey, type Pick } from './briefs.js';
 import type { AiConfig } from './config.js';
 
 export interface Turn {
@@ -8,6 +8,7 @@ export interface Turn {
 
 export interface CallerRequest {
   scenarioId: string;
+  pick: Pick;
   location: string;
   message: string;
   history: Turn[];
@@ -28,12 +29,14 @@ export type Complete = (body: Record<string, unknown>) => Promise<Completion>;
 const MAX_SAY = 220;
 
 export function buildMessages(req: CallerRequest): { role: string; content: string }[] {
-  const brief = briefs[req.scenarioId];
+  const brief = briefFor(req.scenarioId, req.pick);
+  if (!brief) throw new Error('unknown scenario');
   const system = [
     `You play ${brief.name}, a 911 caller in a dispatcher training game, ${brief.mood}.`,
     'Reply as json: {"say":"at most 25 words","told":["fact keys you just gave away"]}.',
     'Answer only what the dispatcher asks. Do not volunteer everything. For anything about the emergency that is not listed below say you do not know.',
     'Small questions about yourself, like what you are wearing or your name, are normal: answer briefly with ordinary adult details, then go back to the emergency.',
+    'The facts below are in your own words.',
     `location: ${req.location}`,
     ...Object.entries(brief.facts).map(([k, v]) => `${k}: ${v}`),
     `told may only use: ${factKeys.join(', ')}.`,

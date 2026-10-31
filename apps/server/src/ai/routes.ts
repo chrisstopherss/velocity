@@ -1,5 +1,5 @@
 import type { FastifyInstance } from 'fastify';
-import { scenarioIds } from './briefs.js';
+import { briefFor, maxPick, scenarioIds } from './briefs.js';
 import { Budget } from './budget.js';
 import {
   buildMessages,
@@ -22,10 +22,20 @@ export interface AiOptions {
 
 const bodySchema = {
   type: 'object',
-  required: ['scenarioId', 'location', 'message'],
+  required: ['scenarioId', 'pick', 'location', 'message'],
   additionalProperties: false,
   properties: {
     scenarioId: { type: 'string', enum: scenarioIds },
+    pick: {
+      type: 'object',
+      required: ['caller', 'variant', 'place'],
+      additionalProperties: false,
+      properties: {
+        caller: { type: 'integer', minimum: 0, maximum: maxPick },
+        variant: { type: 'integer', minimum: 0, maximum: maxPick },
+        place: { type: 'integer', minimum: 0, maximum: maxPick },
+      },
+    },
     location: { type: 'string', maxLength: 160, pattern: "^[A-Za-z0-9 .,'#&/-]*$" },
     message: { type: 'string', minLength: 1, maxLength: 140 },
     history: {
@@ -54,6 +64,7 @@ export function registerCaller(app: FastifyInstance, ai: AiOptions): void {
     { schema: { body: bodySchema }, bodyLimit: 4096 },
     async (req, reply) => {
       const input: CallerRequest = { ...req.body, history: req.body.history ?? [] };
+      if (!briefFor(input.scenarioId, input.pick)) return reply.code(400).send({ error: 'unknown call' });
       const ip = clientIp(req.headers, req.ip, config.ipHeader);
 
       if (unsafe(input.message) || injecting(input.message)) {

@@ -10,6 +10,14 @@ export const incidentTypes: { id: IncidentTypeId; label: string }[] = [
   { id: 'assault', label: 'Assault' },
   { id: 'welfare_check', label: 'Welfare check' },
   { id: 'alarm', label: 'Alarm' },
+  { id: 'robbery', label: 'Robbery' },
+  { id: 'reckless_driver', label: 'Reckless driver' },
+  { id: 'hit_and_run', label: 'Hit and run' },
+  { id: 'noise_disturbance', label: 'Noise disturbance' },
+  { id: 'vehicle_theft', label: 'Vehicle theft' },
+  { id: 'trespass', label: 'Trespassing' },
+  { id: 'suspicious_person', label: 'Suspicious person' },
+  { id: 'disabled_vehicle', label: 'Disabled vehicle' },
 ];
 
 export const priorities: { id: Priority; label: string }[] = [
@@ -40,69 +48,6 @@ export const factLabels: Record<Fact, string> = {
   suspect: 'Suspect',
   safety: 'Caller safety',
 };
-
-export const scenarios: Scenario[] = [
-  {
-    id: 'shots-322',
-    title: 'Shots fired at the plaza',
-    caller: 'Jordan M.',
-    ringAfter: 3,
-    opening: 'Please help, I just heard gunshots right outside!',
-    truth: { type: 'shots_fired', priority: 1, postal: 322, agencies: ['PD', 'SO', 'SP'], minUnits: 2 },
-    answers: {
-      nature: 'Three shots, really close. Then I heard somebody running.',
-      weapons: 'I did not see a gun, but it sounded like a handgun.',
-      injuries: 'I cannot see anyone hurt from my window.',
-      suspect: 'A man in a dark hoodie ran toward the building next door.',
-      safety: 'I am hiding in the back office with the door locked.',
-    },
-  },
-  {
-    id: 'domestic-405',
-    title: 'Neighbors fighting',
-    caller: 'Amara K.',
-    ringAfter: 4,
-    opening: 'My neighbors are screaming at each other again and it sounds bad.',
-    truth: { type: 'domestic', priority: 2, postal: 405, agencies: ['PD', 'SO'], minUnits: 2 },
-    answers: {
-      nature: 'Yelling and things being thrown. I heard something break.',
-      weapons: 'I have not seen any weapons.',
-      injuries: 'I heard a woman crying, I am not sure if she is hurt.',
-      suspect: 'It is the couple in the grey house. The man has a loud voice.',
-      safety: 'I am inside my house, I am fine.',
-    },
-  },
-  {
-    id: 'vehicle-1002',
-    title: 'Van parked for hours',
-    caller: 'Walt B.',
-    ringAfter: 5,
-    opening: 'There is a van that has been parked outside my house all afternoon.',
-    truth: { type: 'suspicious_vehicle', priority: 4, postal: 1008, agencies: ['PD', 'SO', 'SP'], minUnits: 1 },
-    answers: {
-      nature: 'A white van, nobody gets in or out. Somebody keeps looking at my house.',
-      weapons: 'No weapons that I can see.',
-      injuries: 'Nobody is hurt.',
-      suspect: 'I only saw one person, medium build, wearing a cap.',
-      safety: 'I feel safe, just uneasy.',
-    },
-  },
-  {
-    id: 'collision-209',
-    title: 'Crash on Southern Avenue',
-    caller: 'Dana R.',
-    ringAfter: 3,
-    opening: 'There has been a crash at the intersection, one car is on its side!',
-    truth: { type: 'traffic_collision', priority: 2, postal: 209, agencies: ['PD', 'SO', 'SP'], minUnits: 2 },
-    answers: {
-      nature: 'Two cars hit head on. One flipped over, the other is smoking.',
-      weapons: 'No weapons, it is a crash.',
-      injuries: 'The driver of the flipped car is moving but cannot get out.',
-      suspect: 'No suspect. A grey sedan and a red truck.',
-      safety: 'I am on the sidewalk, traffic is backing up.',
-    },
-  },
-];
 
 export function callerLocation(postal: number): string {
   const p = postalById.get(postal);

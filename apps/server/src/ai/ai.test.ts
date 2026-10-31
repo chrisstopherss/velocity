@@ -5,6 +5,8 @@ import { loadAiConfig, type AiConfig } from './config.js';
 import { buildMessages, parseReply, requestBody, type Complete } from './caller.js';
 import { clientIp } from './ip.js';
 import { deflection, injecting, unclear, unsafe } from './safety.js';
+import { briefFor, scenarioIds } from './briefs.js';
+import scenarioFile from '@velocity/scenarios/scenarios.json' with { type: 'json' };
 
 const config: AiConfig = {
   apiKey: 'test-key',
@@ -19,7 +21,8 @@ const config: AiConfig = {
 };
 
 const valid = {
-  scenarioId: 'shots-322',
+  scenarioId: 'shots-fired',
+  pick: { caller: 0, variant: 0, place: 0 },
   location: 'I am on Freedom Avenue. The postal is 322.',
   message: 'Do you see any weapons?',
 };
@@ -104,6 +107,45 @@ describe('budget', () => {
   });
 });
 
+describe('scenario pack', () => {
+  const strings: string[] = [];
+  const walk = (value: unknown) => {
+    if (typeof value === 'string') strings.push(value);
+    else if (Array.isArray(value)) value.forEach(walk);
+    else if (value && typeof value === 'object') Object.values(value).forEach(walk);
+  };
+  walk(scenarioFile.templates);
+
+  it('passes its own content filter', () => {
+    expect(strings.length).toBeGreaterThan(400);
+    for (const text of strings) {
+      expect(unsafe(text), text).toBe(false);
+      expect(injecting(text), text).toBe(false);
+    }
+  });
+
+  it('keeps the AI small: short lines only', () => {
+    for (const text of strings) expect(text.length).toBeLessThan(220);
+  });
+
+  it('builds a brief for every combination and none outside the pack', () => {
+    for (const id of scenarioIds) {
+      const t = scenarioFile.templates.find((x) => x.id === id)!;
+      for (let caller = 0; caller < t.callers.length; caller++) {
+        for (let variant = 0; variant < t.variants.length; variant++) {
+          const brief = briefFor(id, { caller, variant, place: 0 });
+          expect(brief?.facts.nature).toBe(t.variants[variant].nature);
+          expect(brief?.name).toBe(t.callers[caller].name);
+        }
+      }
+      expect(briefFor(id, { caller: t.callers.length, variant: 0, place: 0 })).toBeNull();
+      expect(briefFor(id, { caller: 0, variant: t.variants.length, place: 0 })).toBeNull();
+      expect(briefFor(id, { caller: 0, variant: 0, place: t.places.length })).toBeNull();
+    }
+    expect(briefFor('nope', { caller: 0, variant: 0, place: 0 })).toBeNull();
+  });
+});
+
 describe('prompt', () => {
   it('keeps the request small and thinking off', () => {
     const messages = buildMessages({ ...valid, history: [{ from: 'you', text: 'Where are you?' }] });
@@ -147,6 +189,9 @@ describe('POST /api/caller', () => {
     const app = await appWith(f.complete);
     const bad = [
       { ...valid, scenarioId: 'custom' },
+      { ...valid, pick: undefined },
+      { ...valid, pick: { caller: -1, variant: 0, place: 0 } },
+      { ...valid, pick: { caller: 0, variant: 1.5, place: 0 } },
       { ...valid, message: 'x'.repeat(141) },
       { ...valid, message: '' },
       { ...valid, location: '<script>' },
@@ -156,6 +201,22 @@ describe('POST /api/caller', () => {
       expect((await post(app, payload)).statusCode).toBe(400);
     }
     expect(f.calls).toHaveLength(0);
+  });
+
+  it('refuses a pick that is outside the pack', async () => {
+    const f = fake('{"say":"hi","told":[]}');
+    const res = await post(await appWith(f.complete), { ...valid, pick: { caller: 7, variant: 0, place: 0 } });
+    expect(res.statusCode).toBe(400);
+    expect(f.calls).toHaveLength(0);
+  });
+
+  it('uses the chosen caller and variant in the prompt', async () => {
+    const f = fake('{"say":"ok","told":[]}');
+    const app = await appWith(f.complete);
+    await post(app, { ...valid, scenarioId: 'robbery', pick: { caller: 1, variant: 2, place: 3 } });
+    const system = (f.calls[0].messages as { content: string }[])[0].content;
+    expect(system).toContain('Raj P.');
+    expect(system).toContain('silver revolver');
   });
 
   it('deflects unsafe and injected messages for free', async () => {
