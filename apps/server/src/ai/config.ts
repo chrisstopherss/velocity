@@ -7,6 +7,7 @@ export interface AiConfig {
   ipDailyTokens: number;
   globalDailyTokens: number;
   perMinute: number;
+  ipHeader: string | null;
 }
 
 function int(value: string | undefined, fallback: number): number {
@@ -26,5 +27,6 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfig | n
     ipDailyTokens: int(env.AI_IP_DAILY_TOKENS, 12000),
     globalDailyTokens: int(env.AI_GLOBAL_DAILY_TOKENS, 400000),
     perMinute: int(env.AI_PER_MINUTE, 5),
+    ipHeader: env.CLIENT_IP_HEADER || (env.RAILWAY_PUBLIC_DOMAIN ? 'x-real-ip' : null),
   };
 }

@@ -11,6 +11,7 @@ import {
   type Complete,
 } from './caller.js';
 import type { AiConfig } from './config.js';
+import { clientIp } from './ip.js';
 import { deflection, injecting, unsafe } from './safety.js';
 
 export interface AiOptions {
@@ -53,7 +54,7 @@ export function registerCaller(app: FastifyInstance, ai: AiOptions): void {
     { schema: { body: bodySchema }, bodyLimit: 4096 },
     async (req, reply) => {
       const input: CallerRequest = { ...req.body, history: req.body.history ?? [] };
-      const ip = req.ip;
+      const ip = clientIp(req.headers, req.ip, config.ipHeader);
 
       if (unsafe(input.message) || injecting(input.message)) {
         const verdict = budget.check(ip, 0);

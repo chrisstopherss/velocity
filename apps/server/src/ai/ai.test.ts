@@ -3,6 +3,7 @@ import { buildApp } from '../app.js';
 import { Budget } from './budget.js';
 import { loadAiConfig, type AiConfig } from './config.js';
 import { buildMessages, parseReply, requestBody, type Complete } from './caller.js';
+import { clientIp } from './ip.js';
 import { deflection, injecting, unsafe } from './safety.js';
 
 const config: AiConfig = {
@@ -14,6 +15,7 @@ const config: AiConfig = {
   ipDailyTokens: 1000,
   globalDailyTokens: 5000,
   perMinute: 3,
+  ipHeader: null,
 };
 
 const valid = {
@@ -44,6 +46,25 @@ describe('config', () => {
     const cfg = loadAiConfig({ DEEPSEEK_API_KEY: 'k' });
     expect(cfg).toMatchObject({ model: 'deepseek-v4-flash', maxOutputTokens: 70, ipDailyTokens: 12000, perMinute: 5 });
     expect(loadAiConfig({ DEEPSEEK_API_KEY: 'k', AI_IP_DAILY_TOKENS: 'abc' })?.ipDailyTokens).toBe(12000);
+  });
+});
+
+describe('client ip', () => {
+  it('uses the configured header only when it holds a real address', () => {
+    expect(clientIp({ 'x-real-ip': '203.0.113.9' }, '10.0.0.1', 'x-real-ip')).toBe('203.0.113.9');
+    expect(clientIp({ 'x-real-ip': 'not an ip' }, '10.0.0.1', 'x-real-ip')).toBe('10.0.0.1');
+    expect(clientIp({ 'x-real-ip': '203.0.113.9' }, '10.0.0.1', null)).toBe('10.0.0.1');
+    expect(clientIp({}, '10.0.0.1', 'x-real-ip')).toBe('10.0.0.1');
+  });
+
+  it('counts requests from the same header address against one budget', async () => {
+    const f = fake('{"say":"ok","told":[]}', 600);
+    const app = await appWith(f.complete, { ipHeader: 'x-real-ip', perMinute: 50 });
+    const send = (ip: string) =>
+      app.inject({ method: 'POST', url: '/api/caller', payload: valid, headers: { 'x-real-ip': ip } });
+    expect((await send('198.51.100.1')).statusCode).toBe(200);
+    expect((await send('198.51.100.1')).statusCode).toBe(429);
+    expect((await send('198.51.100.2')).statusCode).toBe(200);
   });
 });
 
