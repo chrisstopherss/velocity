@@ -8,7 +8,8 @@ import { agencyColor, agencyIcons, headingOf, priorityStyle } from '../panels/Ma
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
-import { PLATE_DELAY, scoreStop } from './stops';
+import { buildRecords, search } from './records';
+import { makeStop, PLATE_DELAY, scoreStop } from './stops';
 import type { Stop } from './types';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
@@ -692,5 +693,68 @@ describe('traffic stops', () => {
     expect(s.stops[0].closedAt).not.toBeNull();
     expect(s.stopResults).toHaveLength(1);
     expect(s.units.every((u) => u.status !== 'onstop')).toBe(true);
+  });
+});
+
+describe('records', () => {
+  const stopFor = (outcome: Stop['outcome']) => {
+    for (let n = 1; n < 200; n++) {
+      const stop = makeStop(11, n, 0, startingUnits()[0]);
+      if (stop.outcome === outcome) return stop;
+    }
+    throw new Error('no stop');
+  };
+
+  it('builds the same people for the same seed', () => {
+    expect(buildRecords(5, []).people.map((p) => p.licence)).toEqual(buildRecords(5, []).people.map((p) => p.licence));
+    expect(buildRecords(5, []).people[0].licence).not.toBe(buildRecords(6, []).people[0].licence);
+  });
+
+  it('keeps photo traits with the photo', () => {
+    for (const p of buildRecords(9, []).people) {
+      expect(p.photo.length).toBeGreaterThan(0);
+      if (p.photo === '2606635731') expect(p.hair).toBe('BAL');
+      if (p.sex === 'F') expect(p.photo).toBe('4204483990');
+    }
+  });
+
+  it('finds a person by partial name and by date of birth', () => {
+    const records = buildRecords(5, []);
+    const p = records.people[3];
+    expect(search(records, p.last.slice(0, 4)).people).toContain(p);
+    expect(search(records, `${p.first} ${p.last}`).people).toContain(p);
+    expect(search(records, p.dob).people).toContain(p);
+    expect(search(records, p.licence).people).toContain(p);
+  });
+
+  it('finds a plate even when similar characters are misread', () => {
+    const records = buildRecords(5, []);
+    const v = records.vehicles[2];
+    expect(search(records, v.plate).vehicles).toContain(v);
+    const misread = v.plate.replace(/0/g, 'O').replace(/5/g, 'S');
+    expect(search(records, misread).vehicles).toContain(v);
+  });
+
+  it('returns nothing for a query that is too short', () => {
+    expect(search(buildRecords(5, []), 'a')).toEqual({ people: [], vehicles: [] });
+  });
+
+  it('ties each kind of stop to matching records', () => {
+    const stolen = stopFor('stolen');
+    expect(stolen.car.status).toBe('stolen');
+    expect(stolen.owner.id).not.toBe(stolen.driver.id);
+    const warrant = stopFor('warrant');
+    expect(warrant.driver.warrant).not.toBeNull();
+    expect(warrant.owner.id).toBe(warrant.driver.id);
+    const expired = stopFor('expired');
+    expect(expired.car.status).toBe('expired');
+    expect(expired.driver.warrant).toBeNull();
+  });
+
+  it('lets the player search the stop that was called in', () => {
+    const stop = stopFor('stolen');
+    const records = buildRecords(11, [stop]);
+    expect(search(records, stop.plate).vehicles).toContain(stop.car);
+    expect(search(records, stop.driver.last).people).toContain(stop.driver);
   });
 });

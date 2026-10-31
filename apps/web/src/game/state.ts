@@ -2,6 +2,7 @@ import { answerFor, factQuestions, startingUnits, typeLabel } from '../data/cont
 import { chooseScenario, firstScenario } from '../data/scenarios';
 import { postalById, postalLabel } from '../data/postals';
 import { scoreCall } from './scoring';
+import { fullName } from '../data/people';
 import { mulberry32 } from '../data/scenarios';
 import { patrolRoute, routeToPoint, routeToPostal, stepUnit } from './sim';
 import { advanceStops, isOpen } from './stops';
@@ -157,6 +158,7 @@ export function reducer(state: GameState, action: Action): GameState {
       if (!stop || stop.ackAt !== null) return state;
       return withRadio(updateStop(state, stop.id, { ackAt: state.clock }), [
         ['DISP', `${stop.unitId}, copy traffic stop, ${stop.plate}, ${stop.vehicle}.`],
+        [stop.unitId, `${stop.unitId}, driver gives the name ${fullName(stop.driver)}, date of birth ${stop.driver.dob}.`],
       ]);
     }
     case 'stopPlate': {

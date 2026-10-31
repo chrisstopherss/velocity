@@ -1,4 +1,5 @@
 import { Car, CircleCheck, Info, TriangleAlert } from 'lucide-react';
+import { fullName } from '../data/people';
 import { backupNeeded, isOpen, stopWhere } from '../game/stops';
 import { formatClock } from '../game/sim';
 import type { Stop, StopOutcome } from '../game/types';
@@ -113,6 +114,9 @@ export function StopCard({ g }: { g: GameApi }) {
           </button>
           <button type="button" className={`btn${copied && !ran ? ' primary' : ''}`} disabled={!copied || ran} onClick={() => dispatch({ type: 'stopPlate' })}>
             Run plate
+          </button>
+          <button type="button" className="btn" disabled={!copied} onClick={() => g.openLookup(stop.plateAskedAt === null ? stop.plate : fullName(stop.driver))}>
+            Search records
           </button>
           <button
             type="button"

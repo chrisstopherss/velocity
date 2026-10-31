@@ -1,10 +1,11 @@
-import { Clock, GraduationCap, Info, PhoneCall } from 'lucide-react';
+import { Clock, GraduationCap, Info, PhoneCall, Search } from 'lucide-react';
 import { formatClock } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import { ActiveCall } from '../panels/ActiveCall';
 import { CallQueue } from '../panels/CallQueue';
 import { MapView } from '../panels/MapView';
 import { RadioLog } from '../panels/RadioLog';
+import { RecordsSearch } from '../panels/RecordsSearch';
 import { ScoreCard } from '../panels/ScoreCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
@@ -33,6 +34,10 @@ export function ModernShell({ g }: { g: GameApi }) {
         </p>
         <div className="topbar-right">
           {state.phase === 'ringing' ? <PhoneCall size={18} className="ring-icon" aria-label="Incoming 911" /> : null}
+          <button type="button" className="chip chip-btn" onClick={() => g.openLookup()}>
+            <Search size={14} aria-hidden="true" />
+            Search records
+          </button>
           <span className="chip">
             <Clock size={14} aria-hidden="true" />
             {formatClock(state.clock)}
@@ -59,6 +64,7 @@ export function ModernShell({ g }: { g: GameApi }) {
           <MapView g={g} />
         </div>
       </main>
+      <RecordsSearch g={g} />
       <ScoreCard g={g} />
     </div>
   );

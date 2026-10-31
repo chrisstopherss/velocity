@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import { chooseScenario } from '../data/scenarios';
 import { askCaller, fetchAiEnabled } from './ai';
+import { buildRecords } from './records';
 import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 
 const TICK_SECONDS = 1 / 30;
@@ -32,6 +33,12 @@ export function useGame() {
   });
   const [selected, setSelected] = useState<string[]>([]);
   const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
+  const [lookup, setLookup] = useState<{ open: boolean; query: string }>({ open: false, query: '' });
+  // stops are replaced every tick, their people never change, so rebuild only when one is added
+  const stopTotal = state.stops.length;
+  const records = useMemo(() => buildRecords(state.seed, state.stops), [state.seed, stopTotal]);  const openLookup = useCallback((query = '') => setLookup({ open: true, query }), []);
+  const closeLookup = useCallback(() => setLookup((cur) => ({ ...cur, open: false })), []);
+  const setQuery = useCallback((query: string) => setLookup((cur) => ({ ...cur, query })), []);
   const latest = useRef(state);
   latest.current = state;
 
@@ -80,6 +87,9 @@ export function useGame() {
       if (e.key === 'F1') {
         e.preventDefault();
         dispatch({ type: 'answer' });
+      } else if (e.key === 'F3' || ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k')) {
+        e.preventDefault();
+        setLookup((cur) => ({ ...cur, open: true }));
       } else if (e.key === 'F5') {
         e.preventDefault();
         sendSelected();
@@ -92,7 +102,7 @@ export function useGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sendSelected]);
 
-  return { state, dispatch, selected, toggle, clearSelected, sendSelected, say, ai, hint: hintFor(state) };
+  return { state, dispatch, selected, toggle, clearSelected, sendSelected, records, lookup, openLookup, closeLookup, setQuery, say, ai, hint: hintFor(state) };
 }
 
 export type GameApi = ReturnType<typeof useGame>;

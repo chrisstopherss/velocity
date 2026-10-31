@@ -119,6 +119,8 @@ export interface Score {
 
 export type Phase = 'waiting' | 'ringing' | 'call' | 'incident' | 'closed';
 
+import type { Person, Vehicle } from '../data/people';
+
 export type StopOutcome = 'routine' | 'expired' | 'warrant' | 'stolen' | 'felony';
 
 export interface Stop {
@@ -129,6 +131,9 @@ export interface Stop {
   postal: number;
   vehicle: string;
   plate: string;
+  car: Vehicle;
+  driver: Person;
+  owner: Person;
   outcome: StopOutcome;
   startedAt: number;
   duration: number;

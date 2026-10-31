@@ -342,3 +342,47 @@
 [data-theme='classic'] .stop-tl {
   font-family: 'JetBrains Mono', 'Courier New', monospace;
 }
+
+[data-theme='classic'] .records {
+  border: 2px solid;
+  border-color: #7a7a7a #161616 #161616 #7a7a7a;
+}
+
+[data-theme='classic'] .records-bar {
+  background: linear-gradient(90deg, #0a246a, #3a6ea5);
+  color: #fff;
+  height: 34px;
+  border-bottom: 0;
+}
+
+[data-theme='classic'] .records-bar input {
+  background: #000;
+  color: #48d848;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-size: 13px;
+  height: 24px;
+  padding: 0 6px;
+  border: 2px solid;
+  border-color: #161616 #7a7a7a #7a7a7a #161616;
+}
+
+[data-theme='classic'] .records-list,
+[data-theme='classic'] .records-view {
+  background: #0d0d0d;
+}
+
+[data-theme='classic'] .res.on {
+  background: #0a246a;
+  color: #fff;
+  box-shadow: none;
+}
+
+[data-theme='classic'] .photo {
+  border-radius: 0;
+  border: 2px solid;
+  border-color: #161616 #7a7a7a #7a7a7a #161616;
+}
+
+[data-theme='classic'] .record h3 {
+  font-size: 14px;
+}

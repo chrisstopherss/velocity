@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { loadAiConfig } from './ai/config.js';
 import { registerCaller, type AiOptions } from './ai/routes.js';
+import { registerAvatars } from './avatars.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const defaultWebDir = path.resolve(here, '../../web/dist');
@@ -13,6 +14,7 @@ interface Options {
   webDir?: string;
   logger?: boolean;
   ai?: AiOptions | null;
+  avatarFetch?: typeof fetch;
 }
 
 export async function buildApp(options: Options = {}) {
@@ -32,6 +34,7 @@ export async function buildApp(options: Options = {}) {
 
   app.get('/api/health', async () => ({ ok: true, name: 'velocity', ai: ai !== null }));
   if (ai) registerCaller(app, ai);
+  registerAvatars(app, options.avatarFetch);
 
   if (existsSync(webDir)) {
     await app.register(fastifyStatic, { root: webDir });

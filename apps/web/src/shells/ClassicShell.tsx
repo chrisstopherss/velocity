@@ -1,10 +1,11 @@
-import { CheckCircle2, ClipboardList, GraduationCap, PhoneCall, Send } from 'lucide-react';
+import { CheckCircle2, ClipboardList, GraduationCap, PhoneCall, Search, Send } from 'lucide-react';
 import { formatClock } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import { ActiveCall } from '../panels/ActiveCall';
 import { CallQueue } from '../panels/CallQueue';
 import { MapView } from '../panels/MapView';
 import { RadioLog } from '../panels/RadioLog';
+import { RecordsSearch } from '../panels/RecordsSearch';
 import { ScoreCard } from '../panels/ScoreCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
@@ -36,6 +37,11 @@ export function ClassicShell({ g }: { g: GameApi }) {
           <em>F1</em>
           <PhoneCall size={24} aria-hidden="true" />
           Answer
+        </button>
+        <button type="button" onClick={() => g.openLookup()}>
+          <em>F3</em>
+          <Search size={24} aria-hidden="true" />
+          Records
         </button>
         <button type="button" disabled={!selected.length || phase !== 'incident'} onClick={sendSelected}>
           <em>F5</em>
@@ -102,6 +108,7 @@ export function ClassicShell({ g }: { g: GameApi }) {
           Online
         </span>
       </div>
+      <RecordsSearch g={g} />
       <ScoreCard g={g} />
     </div>
   );

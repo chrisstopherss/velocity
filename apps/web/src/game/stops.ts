@@ -1,3 +1,4 @@
+import { fullName, makePerson, makeVehicle, makeWarrant, dateText, TODAY } from '../data/people';
 import { mulberry32 } from '../data/scenarios';
 import { postalLabel } from '../data/postals';
 import { nearestPostal } from './sim';
@@ -10,8 +11,6 @@ const BACKUP_TIMEOUT = 120;
 const NO_PLATE_TIMEOUT = 130;
 const LEAVE_AFTER_BACKUP = 8;
 
-const colors = ['white', 'black', 'silver', 'red', 'blue', 'grey', 'green', 'tan'];
-const bodies = ['sedan', 'pickup truck', 'SUV', 'hatchback', 'coupe', 'van'];
 
 const outcomeWeights: [StopOutcome, number][] = [
   ['routine', 45],
@@ -22,12 +21,15 @@ const outcomeWeights: [StopOutcome, number][] = [
 ];
 
 const readout: Record<StopOutcome, string> = {
-  routine: 'valid, registered to a local owner, no wants or warrants',
+  routine: 'registration valid, no wants or warrants',
   expired: 'registration expired two months ago, otherwise valid',
-  warrant: 'registered owner has an active warrant for failure to appear',
-  stolen: 'reported stolen yesterday',
-  felony: 'matches a vehicle linked to an armed robbery, use extreme caution',
+  warrant: 'registered owner has an active warrant',
+  stolen: 'reported stolen yesterday, hit not confirmed',
+  felony: 'matches a vehicle linked to an armed robbery, hit not confirmed, use extreme caution',
 };
+
+const plateLine = (stop: Stop) =>
+  `${stop.car.year} ${stop.car.make} ${stop.car.model}, ${stop.car.color}, registered to ${fullName(stop.owner)}, ${readout[stop.outcome]}`;
 
 const backupReason: Record<StopOutcome, string> = {
   routine: '',
@@ -44,9 +46,6 @@ export const stopWhere = (stop: Pick<Stop, 'postal'>) => postalLabel(stop.postal
 
 export function makeStop(seed: number, n: number, clock: number, unit: Unit): Stop {
   const rand = mulberry32(seed * 31 + n * 7919);
-  const pick = <T,>(list: T[]) => list[Math.floor(rand() * list.length)];
-  const letters = Array.from({ length: 3 }, () => String.fromCharCode(65 + Math.floor(rand() * 26))).join('');
-  const digits = String(100 + Math.floor(rand() * 900));
 
   const total = outcomeWeights.reduce((sum, [, w]) => sum + w, 0);
   let roll = rand() * total;
@@ -59,14 +58,42 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
     roll -= w;
   }
 
+  const hit = outcome === 'stolen' || outcome === 'felony';
+  const driver = makePerson(rand, 1000 + n * 2);
+  const owner = hit ? makePerson(rand, 1001 + n * 2) : driver;
+  const car = makeVehicle(rand, owner.id);
+
+  if (outcome === 'expired') {
+    const lapsed = new Date(TODAY.getTime() - 62 * 86400000);
+    car.status = 'expired';
+    car.expires = dateText(lapsed);
+  } else {
+    car.status = hit ? 'stolen' : 'valid';
+    if (!hit) car.expires = dateText(new Date(TODAY.getFullYear() + 1, TODAY.getMonth(), 1));
+  }
+  if (hit) car.reportedBy = 'Liberty County Sheriff';
+  if (outcome === 'routine' || outcome === 'expired') {
+    driver.warrant = null;
+    driver.status = 'valid';
+    driver.suspendedFor = null;
+  }
+  if (outcome === 'warrant') driver.warrant = makeWarrant(rand);
+  if (outcome === 'felony') {
+    driver.warrant = { offence: 'Armed robbery', court: 'Liberty County Superior Court', bond: 25000, extradition: 'Statewide' };
+    driver.caution = 'Armed and dangerous';
+  }
+
   return {
     id: `TS-${n}`,
     unitId: unit.id,
     x: unit.x,
     y: unit.y,
     postal: nearestPostal(unit.x, unit.y) ?? 0,
-    vehicle: `${pick(colors)} ${pick(bodies)}`,
-    plate: `${letters}${digits}`,
+    vehicle: `${car.color} ${car.body}`,
+    plate: car.plate,
+    car,
+    driver,
+    owner,
     outcome,
     startedAt: clock,
     duration: 50 + Math.floor(rand() * 30),
@@ -177,8 +204,9 @@ export function advanceStops(input: Input): Output {
     const needed = backupNeeded(s.outcome);
 
     if (s.plateAskedAt !== null && s.plateResult === null && clock >= s.plateAskedAt + PLATE_DELAY) {
-      s = { ...s, plateResult: readout[s.outcome], plateAt: clock };
-      lines.push(['DISP', `${s.unitId}, plate ${s.plate} returns ${readout[s.outcome]}.`]);
+      const line = plateLine(s);
+      s = { ...s, plateResult: line, plateAt: clock };
+      lines.push(['DISP', `${s.unitId}, plate ${s.plate} returns ${line}.`]);
       if (needed > 0) {
         s = { ...s, backupAskedAt: clock };
         lines.push([s.unitId, `${s.unitId} copy, request ${needed > 1 ? 'two units' : 'a unit'} for backup at the stop, ${backupReason[s.outcome]}.`, true]);
