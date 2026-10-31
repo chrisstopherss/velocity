@@ -1,7 +1,7 @@
 import { fullName, makePerson, makeVehicle, makeWarrant, dateText, TODAY } from '../data/people';
 import { mulberry32 } from '../data/scenarios';
 import { postalLabel } from '../data/postals';
-import { nearestPostal } from './sim';
+import { etaSeconds, nearestPostal } from './sim';
 import type { Stop, StopOutcome, StopResult, Unit } from './types';
 
 export const PLATE_DELAY = 4;
@@ -41,6 +41,16 @@ const backupReason: Record<StopOutcome, string> = {
 
 export const needsBackup = (outcome: StopOutcome) => outcome === 'warrant' || outcome === 'stolen' || outcome === 'felony';
 export const backupNeeded = (outcome: StopOutcome) => (outcome === 'felony' ? 2 : needsBackup(outcome) ? 1 : 0);
+export function nearestAvailable(units: Unit[], postal: number, count: number): string[] {
+  return units
+    .filter((u) => u.status === 'available')
+    .map((u) => ({ id: u.id, eta: etaSeconds(u, postal) ?? Infinity }))
+    .sort((a, b) => a.eta - b.eta)
+    .slice(0, count)
+    .map((u) => u.id);
+}
+
+export const stillNeeded = (stop: Stop) => Math.max(1, backupNeeded(stop.outcome) - stop.backupIds.length);
 export const isOpen = (stop: Stop) => stop.closedAt === null;
 export const stopWhere = (stop: Pick<Stop, 'postal'>) => postalLabel(stop.postal);
 

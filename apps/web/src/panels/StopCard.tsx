@@ -1,7 +1,7 @@
 import { Car, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { fullName } from '../data/people';
-import { backupNeeded, isOpen, stopWhere } from '../game/stops';
+import { backupNeeded, isOpen, nearestAvailable, stillNeeded, stopWhere } from '../game/stops';
 import { formatClock } from '../game/sim';
 import type { Stop, StopOutcome } from '../game/types';
 import type { GameApi } from '../game/useGame';
@@ -13,6 +13,36 @@ const headline: Record<StopOutcome, { tone: 'ok' | 'warn' | 'bad'; title: string
   stolen: { tone: 'bad', title: 'Stolen vehicle', note: 'Hit not confirmed. The unit asks for a unit to back them up.' },
   felony: { tone: 'bad', title: 'Armed felony match', note: 'Use extreme caution. The unit asks for two units.' },
 };
+
+interface Pos {
+  x: number;
+  y: number;
+}
+
+// the card sits bottom right by default and can be dragged by its title bar
+function useDrag() {
+  const [pos, setPos] = useState<Pos | null>(null);
+  const card = useRef<HTMLElement>(null);
+  const start = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest('button') || !card.current) return;
+    const box = card.current.getBoundingClientRect();
+    const dx = e.clientX - box.left;
+    const dy = e.clientY - box.top;
+    const move = (m: PointerEvent) =>
+      setPos({
+        x: Math.max(0, Math.min(window.innerWidth - 80, m.clientX - dx)),
+        y: Math.max(0, Math.min(window.innerHeight - 40, m.clientY - dy)),
+      });
+    const stop = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', stop);
+    };
+    window.addEventListener('pointermove', move);
+    window.addEventListener('pointerup', stop);
+  };
+  const style = pos ? { left: pos.x, top: pos.y, right: 'auto', bottom: 'auto' } : undefined;
+  return { card, start, style };
+}
 
 const spaced = (plate: string) => plate.split('').join(' ');
 const at = (stop: Stop, t: number | null) => (t === null ? null : formatClock(t - stop.startedAt));
@@ -60,12 +90,13 @@ function Status({ g, stop }: { g: GameApi; stop: Stop }) {
 
 function Closed({ g }: { g: GameApi }) {
   const [hidden, setHidden] = useState(false);
+  const drag = useDrag();
   const result = g.state.stopResults[g.state.stopResults.length - 1];
   if (!result || hidden) return null;
   const tone = result.total >= 80 ? 'ok' : result.total >= 50 ? 'warn' : 'bad';
   return (
-    <section className="stop-card" aria-label="Last traffic stop">
-      <header className="stop-hd">
+    <section className="stop-card" aria-label="Last traffic stop" ref={drag.card} style={drag.style}>
+      <header className="stop-hd" onPointerDown={drag.start}>
         <Car size={16} aria-hidden="true" />
         <b>Traffic stop {result.id}</b>
         <small>{result.unitId}</small>
@@ -96,8 +127,12 @@ function Closed({ g }: { g: GameApi }) {
 
 export function StopCard({ g }: { g: GameApi }) {
   const { state, dispatch, selected } = g;
+  const drag = useDrag();
   const stop = state.stops.find(isOpen);
   if (!stop) return <Closed g={g} />;
+
+  const nearest = nearestAvailable(state.units, stop.postal, stillNeeded(stop));
+  const ids = selected.length ? selected : nearest;
 
   const needed = backupNeeded(stop.outcome);
   const copied = stop.ackAt !== null;
@@ -110,8 +145,8 @@ export function StopCard({ g }: { g: GameApi }) {
   if (stop.backupArrivedAt !== null) events.push([at(stop, stop.backupArrivedAt)!, 'Backup on scene']);
 
   return (
-    <section className="stop-card" aria-label="Traffic stop">
-      <header className="stop-hd">
+    <section className="stop-card" aria-label="Traffic stop" ref={drag.card} style={drag.style}>
+      <header className="stop-hd" onPointerDown={drag.start}>
         <Car size={16} aria-hidden="true" />
         <b>Traffic stop {stop.id}</b>
         <small>{stop.unitId}</small>
@@ -131,16 +166,18 @@ export function StopCard({ g }: { g: GameApi }) {
           <button
             type="button"
             className={`btn${stop.backupAskedAt !== null ? ' primary' : ''}`}
-            disabled={!copied || !selected.length}
+            disabled={!copied || !ids.length}
             onClick={() => {
-              dispatch({ type: 'stopBackup', unitIds: selected });
+              dispatch({ type: 'stopBackup', unitIds: ids });
               g.clearSelected();
             }}
           >
-            Send backup{selected.length ? ` (${selected.length})` : ''}
+            Send backup{ids.length ? ` (${ids.length})` : ''}
           </button>
         </div>
-        {copied && !selected.length ? <p className="muted stop-hint">Tick the units to send in the unit status panel.</p> : null}
+        {copied && !selected.length && ids.length ? (
+          <p className="muted stop-hint">Sends {ids.join(', ')}, the nearest. Tick other units in the unit status panel to choose.</p>
+        ) : null}
         <div className="stop-veh">
           <span className="plate">
             <i>LIBERTY COUNTY</i>

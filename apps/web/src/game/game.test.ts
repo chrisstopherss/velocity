@@ -10,7 +10,7 @@ import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { fullName } from '../data/people';
 import { buildRecords, search } from './records';
-import { makeStop, PLATE_DELAY, scoreStop } from './stops';
+import { makeStop, nearestAvailable, PLATE_DELAY, scoreStop, stillNeeded } from './stops';
 import type { Stop } from './types';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
@@ -680,6 +680,15 @@ describe('traffic stops', () => {
     s = reducer(s, { type: 'stopBackup', unitIds: [free.id] });
     expect(s.stops[0].backupIds).toEqual([free.id]);
     expect(s.units.find((u) => u.id === free.id)?.status).toBe('enroute');
+  });
+
+  it('picks the nearest free units for backup and skips busy ones', () => {
+    const s = withStop('felony');
+    const ids = nearestAvailable(s.units, s.stops[0].postal, 2);
+    expect(ids).toHaveLength(2);
+    expect(ids).not.toContain(s.stops[0].unitId);
+    expect(stillNeeded(s.stops[0])).toBe(2);
+    expect(stillNeeded({ ...s.stops[0], backupIds: ['a'] })).toBe(1);
   });
 
   it('scores a clean stop with no backup at full marks', () => {

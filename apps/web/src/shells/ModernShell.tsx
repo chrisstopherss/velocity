@@ -7,6 +7,7 @@ import { MapView } from '../panels/MapView';
 import { RadioLog } from '../panels/RadioLog';
 import { RecordsSearch } from '../panels/RecordsSearch';
 import { ScoreCard } from '../panels/ScoreCard';
+import { StopCard } from '../panels/StopCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
 import { resizeAt, Splitter, tracks, useSizes } from '../ui/Splitter';
@@ -64,6 +65,7 @@ export function ModernShell({ g }: { g: GameApi }) {
           <MapView g={g} />
         </div>
       </main>
+      <StopCard g={g} />
       <RecordsSearch g={g} />
       <ScoreCard g={g} />
     </div>

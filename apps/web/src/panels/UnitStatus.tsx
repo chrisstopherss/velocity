@@ -5,6 +5,7 @@ import type { UnitStatus as Status } from '../game/types';
 import type { GameApi } from '../game/useGame';
 import { Panel } from '../ui/Panel';
 import { agencyName } from '../data/content';
+import { nearestAvailable, stillNeeded } from '../game/stops';
 
 const statusText: Record<Status, string> = {
   available: 'Available',
@@ -30,6 +31,8 @@ export function UnitStatus({ g }: { g: GameApi }) {
       .slice(0, scenario.truth.minUnits)
       .forEach((u) => recommended.add(u.id));
   }
+
+  if (!canPickIncident && stop) nearestAvailable(units, stop.postal, stillNeeded(stop)).forEach((id) => recommended.add(id));
 
   return (
     <Panel title="Unit status" icon={<Users size={16} aria-hidden="true" />} className="panel-units">

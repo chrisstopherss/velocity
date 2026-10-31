@@ -7,7 +7,6 @@ import type { GameApi } from '../game/useGame';
 import type { Point } from '../game/types';
 import { Panel } from '../ui/Panel';
 import { IncidentMarker, StopMarker, UnitMarker } from './MapMarkers';
-import { StopCard } from './StopCard';
 import { RouteLine } from './RouteLine';
 
 const MAP_SIZE = 1932;
@@ -222,7 +221,6 @@ export function MapView({ g }: { g: GameApi }) {
           <UnitMarker key={u.id} unit={u} scale={scale} />
         ))}
       </svg>
-      <StopCard g={g} />
     </Panel>
   );
 }
