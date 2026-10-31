@@ -49,7 +49,7 @@ export function search(records: Records, query: string): Results {
   const q = query.trim();
   if (q.length < 2) return { people: [], vehicles: [] };
 
-  const tokens = q.toLowerCase().split(/[\s,]+/).filter(Boolean);
+  const tokens = q.toLowerCase().split(/[\s,.]+/).filter(Boolean);
   const folded = fold(q);
   const numeric = digits(q);
   const looksLikeDate = /^\d{1,2}[/-]\d{1,2}([/-]\d{2,4})?$/.test(q) || /^(19|20)\d{2}$/.test(q);

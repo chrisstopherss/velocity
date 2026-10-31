@@ -8,6 +8,7 @@ import { agencyColor, agencyIcons, headingOf, priorityStyle } from '../panels/Ma
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
+import { fullName } from '../data/people';
 import { buildRecords, search } from './records';
 import { makeStop, PLATE_DELAY, scoreStop } from './stops';
 import type { Stop } from './types';
@@ -725,6 +726,13 @@ describe('records', () => {
     expect(search(records, `${p.first} ${p.last}`).people).toContain(p);
     expect(search(records, p.dob).people).toContain(p);
     expect(search(records, p.licence).people).toContain(p);
+  });
+
+  it('finds a person from the full name with the middle initial and its period', () => {
+    const records = buildRecords(5, []);
+    const p = records.people[7];
+    expect(search(records, fullName(p)).people).toContain(p);
+    expect(search(records, `${p.last}, ${p.first}`).people).toContain(p);
   });
 
   it('finds a plate even when similar characters are misread', () => {
