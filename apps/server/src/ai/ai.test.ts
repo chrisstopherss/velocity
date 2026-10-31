@@ -158,6 +158,24 @@ describe('call variants', () => {
     expect(messages[0].content).toContain('none of this is real');
   });
 
+  it('shows earlier caller lines to the model in the same json shape it must answer in', () => {
+    const messages = buildMessages({
+      ...valid,
+      history: [
+        { from: 'you', text: 'Where are you?' },
+        { from: 'caller', text: 'Outside the store.' },
+      ],
+    });
+    expect(messages[1]).toEqual({ role: 'user', content: 'Where are you?' });
+    expect(messages[2]).toEqual({ role: 'assistant', content: '{"say":"Outside the store.","told":[]}' });
+  });
+
+  it('keeps a plain words reply instead of asking the player to repeat', async () => {
+    const f = fake('I did not see anyone with a gun, just heard bangs.');
+    const res = await post(await appWith(f.complete), valid);
+    expect(res.json().say).toBe('I did not see anyone with a gun, just heard bangs.');
+  });
+
   it('does not add a special situation to an ordinary call', () => {
     const messages = buildMessages({ ...valid, history: [] });
     expect(messages[0].content).not.toContain('Special situation');
@@ -201,7 +219,10 @@ describe('prompt', () => {
       say: 'No gun.',
       told: ['weapons'],
     });
-    expect(parseReply('not json')).toBeNull();
+    expect(parseReply('not json')).toEqual({ say: 'not json', told: [] });
+    expect(parseReply('"I did not see a gun."')).toEqual({ say: 'I did not see a gun.', told: [] });
+    expect(parseReply('{"foo":1}')).toBeNull();
+    expect(parseReply('???')).toBeNull();
     expect(parseReply('{"say":"I am in a grey hoodie and jeans, please hurry and send someone to the plaza, I can hear')).toEqual({
       say: 'I am in a grey hoodie and jeans, please hurry and send someone to the plaza, I can hear',
       told: [],

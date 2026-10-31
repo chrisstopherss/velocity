@@ -48,7 +48,11 @@ export function buildMessages(req: CallerRequest): { role: string; content: stri
 
   return [
     { role: 'system', content: system },
-    ...req.history.map((t) => ({ role: t.from === 'you' ? 'user' : 'assistant', content: t.text })),
+    ...req.history.map((t) =>
+      t.from === 'you'
+        ? { role: 'user', content: t.text }
+        : { role: 'assistant', content: JSON.stringify({ say: t.text, told: [] }) },
+    ),
     { role: 'user', content: req.message },
   ];
 }
@@ -93,13 +97,24 @@ export function parseReply(raw: string): CallerReply | null {
   const text = raw.trim();
   if (!text) return null;
   try {
-    const data = JSON.parse(text) as { say?: unknown; told?: unknown };
-    if (typeof data.say !== 'string') return null;
+    const data = JSON.parse(text) as { say?: unknown; told?: unknown } | string | null;
+    if (typeof data === 'string') {
+      const say = clean(data);
+      return say ? { say, told: [] } : null;
+    }
+    if (!data || typeof data.say !== 'string') return null;
     const say = clean(data.say);
     return say ? { say, told: facts(data.told) } : null;
   } catch {
-    return salvage(text);
+    return salvage(text) ?? plain(text);
   }
+}
+
+// the model sometimes answers in plain words, that is still the caller talking
+function plain(text: string): CallerReply | null {
+  if (text.startsWith('{') || text.startsWith('[') || !/[A-Za-z]/.test(text)) return null;
+  const say = clean(text.replace(/^"+|"+$/g, ''));
+  return say ? { say, told: [] } : null;
 }
 
 export function deepseek(config: AiConfig): Complete {

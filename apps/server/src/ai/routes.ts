@@ -81,7 +81,10 @@ export function registerCaller(app: FastifyInstance, ai: AiOptions): void {
         const done = await complete(requestBody(config, messages));
         budget.record(ip, done.tokens);
         const parsed = parseReply(done.text);
-        if (!parsed) return { say: unclear, told: [], left: budget.left(ip) };
+        if (!parsed) {
+          req.log.warn({ sample: done.text.slice(0, 160) }, 'caller reply could not be read');
+          return { say: unclear, told: [], left: budget.left(ip) };
+        }
         if (unsafe(parsed.say)) return { say: deflection, told: [], left: budget.left(ip) };
         return { ...parsed, left: budget.left(ip) };
       } catch (err) {
