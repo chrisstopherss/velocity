@@ -1,7 +1,7 @@
 import { Check, ClipboardList, Headset, PhoneCall } from 'lucide-react';
 import { useState } from 'react';
 import { factLabels, factOrder, factQuestions, incidentTypes, priorities } from '../data/content';
-import { postalById } from '../data/postals';
+import { postalById, postalDetail } from '../data/postals';
 import type { GameApi } from '../game/useGame';
 import type { IncidentTypeId, Priority } from '../game/types';
 import { Panel } from '../ui/Panel';
@@ -110,11 +110,11 @@ function IncidentForm({ g }: { g: GameApi }) {
         />
         <span className={`lookup ${found || incident ? 'ok' : ''}`}>
           {incident
-            ? postalById.get(incident.postal)?.street ?? ''
+            ? postalDetail(incident.postal)
             : postal === ''
               ? 'Enter the caller postal'
               : found
-                ? found.street ?? 'Postal found'
+                ? postalDetail(found.id) || 'Postal found'
                 : 'Postal not found'}
         </span>
       </label>

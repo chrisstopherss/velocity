@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { factOrder, scenarios, startingUnits } from '../data/content';
+import { answerFor, factOrder, scenarios, startingUnits } from '../data/content';
 import { postalById } from '../data/postals';
 import { etaSeconds, stepUnit } from './sim';
 import { initialState, reducer, type Action, type GameState } from './state';
@@ -21,6 +21,32 @@ describe('data', () => {
   it('has unique postal ids', () => {
     const ids = [...postalById.keys()];
     expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('keeps every postal inside the map image', () => {
+    for (const p of postalById.values()) {
+      expect(p.x).toBeGreaterThan(0);
+      expect(p.x).toBeLessThan(1932);
+      expect(p.y).toBeGreaterThan(0);
+      expect(p.y).toBeLessThan(1932);
+    }
+  });
+
+  it('uses corrected street names', () => {
+    const streets = new Set([...postalById.values()].map((p) => p.street));
+    for (const typo of ['Independance Parkway', 'Freicht Street', 'Pock Street', 'Ceoar Circle']) {
+      expect(streets.has(typo)).toBe(false);
+    }
+    expect(streets.has('Independence Parkway')).toBe(true);
+  });
+
+  it('builds the caller location from the real postal data', () => {
+    for (const s of scenarios) {
+      const answer = answerFor(s, 'location');
+      const street = postalById.get(s.truth.postal)?.street;
+      expect(answer).toContain(String(s.truth.postal));
+      if (street) expect(answer).toContain(street);
+    }
   });
 });
 

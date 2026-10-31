@@ -16,6 +16,7 @@ export interface Postal {
   x: number;
   y: number;
   street?: string;
+  near?: string;
 }
 
 export interface Scenario {
@@ -31,7 +32,7 @@ export interface Scenario {
     agencies: Agency[];
     minUnits: number;
   };
-  answers: Record<Fact, string>;
+  answers: Record<Exclude<Fact, 'location'>, string>;
 }
 
 export type UnitStatus = 'available' | 'enroute' | 'onscene';

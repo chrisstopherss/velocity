@@ -50,7 +50,6 @@ export const scenarios: Scenario[] = [
     opening: 'Please help, I just heard gunshots right outside!',
     truth: { type: 'shots_fired', priority: 1, postal: 322, agencies: ['PD', 'SO', 'SP'], minUnits: 2 },
     answers: {
-      location: 'I am at the plaza on Bulletin Avenue. I think the postal is 322.',
       nature: 'Three shots, really close. Then I heard somebody running.',
       weapons: 'I did not see a gun, but it sounded like a handgun.',
       injuries: 'I cannot see anyone hurt from my window.',
@@ -66,7 +65,6 @@ export const scenarios: Scenario[] = [
     opening: 'My neighbors are screaming at each other again and it sounds bad.',
     truth: { type: 'domestic', priority: 2, postal: 405, agencies: ['PD', 'SO'], minUnits: 2 },
     answers: {
-      location: 'I live on Emerson Road, postal 405. They are next door.',
       nature: 'Yelling and things being thrown. I heard something break.',
       weapons: 'I have not seen any weapons.',
       injuries: 'I heard a woman crying, I am not sure if she is hurt.',
@@ -80,9 +78,8 @@ export const scenarios: Scenario[] = [
     caller: 'Walt B.',
     ringAfter: 5,
     opening: 'There is a van that has been parked outside my house all afternoon.',
-    truth: { type: 'suspicious_vehicle', priority: 4, postal: 1002, agencies: ['PD', 'SO', 'SP'], minUnits: 1 },
+    truth: { type: 'suspicious_vehicle', priority: 4, postal: 1008, agencies: ['PD', 'SO', 'SP'], minUnits: 1 },
     answers: {
-      location: 'Maple Street, postal 1002.',
       nature: 'A white van, nobody gets in or out. Somebody keeps looking at my house.',
       weapons: 'No weapons that I can see.',
       injuries: 'Nobody is hurt.',
@@ -98,7 +95,6 @@ export const scenarios: Scenario[] = [
     opening: 'There has been a crash at the intersection, one car is on its side!',
     truth: { type: 'traffic_collision', priority: 2, postal: 209, agencies: ['PD', 'SO', 'SP'], minUnits: 2 },
     answers: {
-      location: 'Freedom Avenue near postal 209.',
       nature: 'Two cars hit head on. One flipped over, the other is smoking.',
       weapons: 'No weapons, it is a crash.',
       injuries: 'The driver of the flipped car is moving but cannot get out.',
@@ -107,6 +103,17 @@ export const scenarios: Scenario[] = [
     },
   },
 ];
+
+export function callerLocation(postal: number): string {
+  const p = postalById.get(postal);
+  if (!p) return `The postal is ${postal}.`;
+  const where = p.street ?? 'the area';
+  return p.near ? `I am on ${where}, near ${p.near}. The postal is ${postal}.` : `I am on ${where}. The postal is ${postal}.`;
+}
+
+export function answerFor(scenario: Scenario, fact: Fact): string {
+  return fact === 'location' ? callerLocation(scenario.truth.postal) : scenario.answers[fact];
+}
 
 const agencyNames: Record<Agency, string> = { PD: 'Police', SO: 'Sheriff', SP: 'State Patrol' };
 export const agencyName = (a: Agency) => agencyNames[a];

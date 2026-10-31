@@ -48,7 +48,7 @@ npm run typecheck
 - `apps/web` is the React and Vite front end. The game rules live in `src/game`, the call scripts and unit roster in `src/data`, and each theme has its own shell in `src/shells`.
 - `apps/server` is a small Fastify server. For now it serves the built web app and a health check at `/api/health`.
 
-The simulation runs in the browser. Postal positions on the map are approximate and were placed by hand, so some will be a little off.
+The simulation runs in the browser. Postal numbers, street names and nearby landmarks come from CADLY's public map resolver, collected once with `scripts/cadly-scan.mjs` and turned into data by `scripts/build-postals.mjs`. The app does not call that API while you play. Postal positions on the map image are fitted from that data, so they are close but not exact. The resolver misspells a few street names, and those are corrected in the build script.
 
 ## Keys
 
@@ -59,6 +59,7 @@ The simulation runs in the browser. Postal positions on the map are approximate 
 ## Credits
 
 - The map image is from ER:LC. It belongs to its creators. Velocity is not affiliated with or endorsed by ER:LC, its developers or Roblox.
+- Postal and street data come from [CADLY](https://cadly.me)'s public map resolver.
 - Icons are from the Lucide set (ISC license).
 
 ## License

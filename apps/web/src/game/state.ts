@@ -1,4 +1,4 @@
-import { factQuestions, scenarios, startingUnits, typeLabel } from '../data/content';
+import { answerFor, factQuestions, scenarios, startingUnits, typeLabel } from '../data/content';
 import { postalById, postalLabel } from '../data/postals';
 import { scoreCall } from './scoring';
 import { stepUnit } from './sim';
@@ -110,7 +110,7 @@ export function reducer(state: GameState, action: Action): GameState {
         transcript: [
           ...state.transcript,
           { from: 'you', text: factQuestions[action.fact] },
-          { from: 'caller', text: state.scenario.answers[action.fact] },
+          { from: 'caller', text: answerFor(state.scenario, action.fact) },
         ],
       };
     }
