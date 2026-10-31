@@ -67,7 +67,7 @@ It is built to be cheap and hard to abuse:
 
 ## Calls
 
-Calls live in `packages/scenarios/scenarios.json`, which both the game and the AI server read. Each template is one kind of call (shots fired, burglary, robbery and so on) with a type, priority, the agencies that fit, and how many units it needs. A template also has a few callers, a few variants and a list of postals where it can happen. Each variant is a coherent set of answers: the opening line and what the caller says about the nature of the call, weapons, injuries, the suspect and their own safety. When a call comes in, the game picks a template, then a caller, a variant and a place, so the same kind of call plays differently each time. The first call of a shift is always the same easy one.
+Calls live in `packages/scenarios/scenarios.json`, which both the game and the AI server read. Each template is one kind of call (shots fired, burglary, robbery and so on) with a type, priority, the agencies that fit, and how many units it needs. A template also has a few callers, a few variants and a list of postals where it can happen. Each variant is a coherent set of answers: the opening line and what the caller says about the nature of the call, weapons, injuries, the suspect and their own safety. When a call comes in, the game picks a template, then a caller, a variant and a place, so the same kind of call plays differently each time. The first call is random too.
 
 To add a call, add a template and run the tests. They check that the postals exist, every answer is filled in, and the text passes the content filter. Calls are for adults only: no children, nothing sexual, no gore, no self-harm.
 

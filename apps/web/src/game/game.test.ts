@@ -93,13 +93,17 @@ describe('scenario pack', () => {
     expect(new Set(templates.map((t) => t.id)).size).toBe(templates.length);
   });
 
-  it('starts with the same easy call and then varies', () => {
-    const first = firstScenario();
-    expect(first.id).toBe('shots-fired');
-    expect(first.truth.postal).toBe(322);
+  it('picks a different first call for different seeds', () => {
+    const firsts = new Set<string>();
+    for (let seed = 1; seed <= 80; seed++) firsts.add(chooseScenario(seed * 7919, 0).id);
+    expect(firsts.size).toBeGreaterThanOrEqual(10);
+    expect([...firsts].some((id) => id !== 'shots-fired')).toBe(true);
+  });
+
+  it('keeps varying and never repeats a template back to back', () => {
     const ids = new Set<string>();
     const picks = new Set<string>();
-    let previous = first.id;
+    let previous = chooseScenario(7, 0).id;
     for (let n = 1; n <= 60; n++) {
       const s = chooseScenario(7, n, previous);
       expect(s.id).not.toBe(previous);
@@ -110,6 +114,20 @@ describe('scenario pack', () => {
     }
     expect(ids.size).toBeGreaterThanOrEqual(12);
     expect(picks.size).toBeGreaterThan(40);
+  });
+
+  it('starts a restarted shift on a different call', () => {
+    const state = initialState(11, chooseScenario(11, 0));
+    const again = reducer(state, { type: 'reset' });
+    expect(again.seed).toBe(12);
+    expect(again.scenario.id).not.toBe(state.scenario.id);
+    expect(again.phase).toBe('waiting');
+  });
+
+  it('uses the scenario it is given for the first call', () => {
+    const scenario = chooseScenario(3, 0);
+    expect(initialState(3, scenario).scenario).toBe(scenario);
+    expect(initialState().scenario.id).toBe('shots-fired');
   });
 
   it('gives the same call for the same seed and a different one for another seed', () => {

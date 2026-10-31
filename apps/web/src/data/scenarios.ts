@@ -66,7 +66,7 @@ export function instantiate(template: Template, pick: ScenarioPick, ringAfter?: 
   };
 }
 
-// the first call is always the same so a new player starts with the easy one
+// a fixed call for tests and as the default starting state, the game picks its own
 export function firstScenario(): Scenario {
   return instantiate(templates[0], { caller: 0, variant: 0, place: 0 });
 }

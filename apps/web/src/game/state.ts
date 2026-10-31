@@ -48,8 +48,7 @@ export type Action =
   | { type: 'next' }
   | { type: 'reset' };
 
-export function initialState(seed = 1): GameState {
-  const scenario = firstScenario();
+export function initialState(seed = 1, scenario: Scenario = firstScenario()): GameState {
   return {
     seed,
     clock: 0,
@@ -235,8 +234,10 @@ export function reducer(state: GameState, action: Action): GameState {
         score: null,
       };
     }
-    case 'reset':
-      return initialState();
+    case 'reset': {
+      const seed = state.seed + 1;
+      return initialState(seed, chooseScenario(seed, 0, state.scenario.id));
+    }
     default:
       return state;
   }

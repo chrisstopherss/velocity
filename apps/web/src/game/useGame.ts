@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import { chooseScenario } from '../data/scenarios';
 import { askCaller, fetchAiEnabled } from './ai';
 import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 
@@ -22,7 +23,10 @@ export function hintFor(state: GameState): string {
 }
 
 export function useGame() {
-  const [state, dispatch] = useReducer(reducer, undefined, () => initialState(Math.floor(Math.random() * 2 ** 31)));
+  const [state, dispatch] = useReducer(reducer, undefined, () => {
+    const seed = Math.floor(Math.random() * 2 ** 31);
+    return initialState(seed, chooseScenario(seed, 0));
+  });
   const [selected, setSelected] = useState<string[]>([]);
   const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
   const latest = useRef(state);
