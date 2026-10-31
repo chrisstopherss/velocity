@@ -7,7 +7,7 @@ import { rawRoads } from '../data/roads.data';
 import { agencyColor, agencyIcons, headingOf, priorityStyle } from '../panels/MapMarkers';
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
-import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
+import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
@@ -394,6 +394,116 @@ describe('calls that need no units', () => {
       { type: 'dispatch', unitIds: ['1A-12'] },
     ]);
     expect(reducer(sent, { type: 'dismiss' })).toBe(sent);
+  });
+});
+
+describe('patrol', () => {
+  const secondsLater = (state: GameState, seconds: number) => {
+    let s = state;
+    for (let i = 0; i < seconds * 2; i++) s = reducer(s, { type: 'tick', dt: 0.5 });
+    return s;
+  };
+
+  it('keeps available units moving on the streets', () => {
+    const start = initialState();
+    const later = secondsLater(start, 90);
+    const moved = later.units.filter((u, i) => Math.hypot(u.x - start.units[i].x, u.y - start.units[i].y) > 20);
+    expect(moved.length).toBe(start.units.length);
+    expect(later.units.every((u) => u.status === 'available')).toBe(true);
+  });
+
+  it('patrols slower than it responds and says nothing on the radio', () => {
+    const later = secondsLater(initialState(), 30);
+    const moving = later.units.filter((u) => u.route.length);
+    expect(moving.length).toBeGreaterThan(0);
+    expect(later.radio).toHaveLength(0);
+    expect(PATROL_SPEED).toBeLessThan(UNIT_SPEED);
+  });
+
+  it('repeats the same patrol for the same seed and differs for another', () => {
+    const a = secondsLater(initialState(5), 40).units.map((u) => [Math.round(u.x), Math.round(u.y)]);
+    const b = secondsLater(initialState(5), 40).units.map((u) => [Math.round(u.x), Math.round(u.y)]);
+    const c = secondsLater(initialState(99), 40).units.map((u) => [Math.round(u.x), Math.round(u.y)]);
+    expect(a).toEqual(b);
+    expect(a).not.toEqual(c);
+  });
+
+  it('drops the patrol for a dispatch and goes back to patrolling afterwards', () => {
+    const base = secondsLater(run(untilRinging(initialState()), [{ type: 'answer' }]), 5);
+    const sent = run(base, [
+      { type: 'create', draft: { type: 'shots_fired', priority: 1, postal: 322, narrative: '' } },
+      { type: 'dispatch', unitIds: ['1A-12'] },
+    ]);
+    const unit = sent.units.find((u) => u.id === '1A-12')!;
+    expect(unit.status).toBe('enroute');
+    expect(unit.trail).toHaveLength(1);
+
+    const there = secondsLater(sent, 120);
+    expect(there.units.find((u) => u.id === '1A-12')!.status).toBe('onscene');
+    expect(there.radio.map((r) => r.text).join(' ')).toContain('1A-12 on scene');
+
+    const cleared = reducer(there, { type: 'clear' });
+    expect(cleared.units.find((u) => u.id === '1A-12')!.status).toBe('available');
+    const after = secondsLater(cleared, 20);
+    const roaming = after.units.find((u) => u.id === '1A-12')!;
+    expect(Math.hypot(roaming.x - 1086, roaming.y - 1197)).toBeGreaterThan(5);
+  });
+});
+
+describe('questions for each call', () => {
+  const FACTS = ['location', 'nature', 'weapons', 'injuries', 'suspect', 'safety'];
+  const collision = () => instantiate(templates.find((t) => t.id === 'collision')!, { caller: 0, variant: 0, place: 0 });
+
+  it('only lists real questions, always asking location and nature first', () => {
+    for (const t of templates) {
+      for (const list of [t.questions, ...t.variants.map((v) => v.questions ?? t.questions)]) {
+        expect(new Set(list).size).toBe(list.length);
+        for (const f of list) expect(FACTS, `${t.id} ${f}`).toContain(f);
+        expect(list).toContain('location');
+        expect(list).toContain('nature');
+      }
+    }
+  });
+
+  it('leaves out questions that make no sense for the call', () => {
+    const c = collision();
+    expect(c.questions).not.toContain('weapons');
+    expect(c.questions).not.toContain('suspect');
+    const alarm = instantiate(templates.find((t) => t.id === 'alarm')!, { caller: 0, variant: 0, place: 0 });
+    expect(alarm.questions).not.toContain('injuries');
+    expect(templates.find((t) => t.id === 'shots-fired')!.questions).toHaveLength(6);
+  });
+
+  it('lets a variant ask more than its template', () => {
+    const theft = templates.find((t) => t.id === 'vehicle-theft')!;
+    const carjacking = theft.variants.findIndex((v) => v.label === 'Carjacking');
+    const s = instantiate(theft, { caller: 0, variant: carjacking, place: 0 });
+    expect(s.questions).toContain('weapons');
+    expect(instantiate(theft, { caller: 0, variant: 0, place: 0 }).questions).not.toContain('weapons');
+  });
+
+  it('ignores a question the call does not have', () => {
+    const answered = run(untilRinging(initialState(1, collision())), [{ type: 'answer' }]);
+    expect(reducer(answered, { type: 'ask', fact: 'weapons' })).toBe(answered);
+    expect(reducer(answered, { type: 'ask', fact: 'injuries' }).asked).toContain('injuries');
+  });
+
+  it('gives full information marks for asking everything that applies', () => {
+    const c = collision();
+    const done = run(untilRinging(initialState(1, c)), [
+      { type: 'answer' },
+      ...c.questions.map((fact): Action => ({ type: 'ask', fact })),
+      { type: 'create', draft: { type: 'traffic_collision', priority: 2, postal: c.truth.postal, narrative: '' } },
+      { type: 'dispatch', unitIds: ['1A-12', '1A-09', 'S-21'] },
+      { type: 'clear' },
+    ]);
+    expect(done.score!.lines.find((l) => l.label === 'Information gathered')).toMatchObject({ points: 30, max: 30 });
+  });
+
+  it('scales the information marks to the questions that apply', () => {
+    const c = collision();
+    const half = run(untilRinging(initialState(1, c)), [{ type: 'answer' }, { type: 'ask', fact: 'location' }, { type: 'ask', fact: 'nature' }, { type: 'dismiss' }]);
+    expect(half.score!.lines.find((l) => l.label === 'Information gathered')!.points).toBe(15);
   });
 });
 

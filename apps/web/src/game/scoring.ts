@@ -32,11 +32,12 @@ export function scoreCall(input: ScoreInput): Score {
   const answerPts = pointsByThreshold(answerWait, [[8, 10], [15, 6]], 2);
   lines.push({ label: 'Answer time', points: answerPts, max: 10, note: `Answered after ${Math.round(answerWait)}s.` });
 
-  const got = factOrder.filter((f) => asked.includes(f));
-  const missing = factOrder.filter((f) => !asked.includes(f));
+  const relevant = factOrder.filter((f) => scenario.questions.includes(f));
+  const got = relevant.filter((f) => asked.includes(f));
+  const missing = relevant.filter((f) => !asked.includes(f));
   lines.push({
     label: 'Information gathered',
-    points: got.length * 5,
+    points: Math.round((got.length / relevant.length) * 30),
     max: 30,
     note: missing.length ? `Not asked: ${missing.join(', ')}.` : 'You covered every question.',
   });

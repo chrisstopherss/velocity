@@ -2,7 +2,7 @@ import { answerFor, factQuestions, startingUnits, typeLabel } from '../data/cont
 import { chooseScenario, firstScenario } from '../data/scenarios';
 import { postalById, postalLabel } from '../data/postals';
 import { scoreCall } from './scoring';
-import { routeToPostal, stepUnit } from './sim';
+import { patrolRoute, routeToPostal, stepUnit } from './sim';
 import type {
   Fact,
   Incident,
@@ -90,7 +90,17 @@ export function reducer(state: GameState, action: Action): GameState {
         next = { ...next, phase: 'ringing' };
       }
       const arrivals: string[] = [];
-      const units = next.units.map((u) => {
+      const units = next.units.map((current) => {
+        let u = current;
+        if (u.status === 'available' && !u.route.length) {
+          const wait = u.wait - action.dt;
+          if (wait > 0) {
+            u = { ...u, wait };
+          } else {
+            const route = patrolRoute(u, next.seed, next.clock);
+            u = route.length ? { ...u, route, wait: 0 } : { ...u, wait: 2 };
+          }
+        }
         const res = stepUnit(u, action.dt);
         if (res.arrived) arrivals.push(u.name);
         return res.unit;
@@ -115,7 +125,7 @@ export function reducer(state: GameState, action: Action): GameState {
     }
     case 'ask': {
       if (state.phase !== 'call' && state.phase !== 'incident') return state;
-      if (state.asked.includes(action.fact)) return state;
+      if (state.asked.includes(action.fact) || !state.scenario.questions.includes(action.fact)) return state;
       return {
         ...state,
         asked: [...state.asked, action.fact],
@@ -177,6 +187,7 @@ export function reducer(state: GameState, action: Action): GameState {
               status: 'enroute' as const,
               route: routeToPostal(u, incident.postal) ?? [],
               trail: [{ x: u.x, y: u.y }],
+              wait: 0,
             }
           : u,
       );

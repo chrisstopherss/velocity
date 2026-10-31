@@ -8,7 +8,8 @@ export interface SelectOption<T> {
 }
 
 interface SelectProps<T extends string | number> {
-  value: T;
+  value: T | '';
+  placeholder?: string;
   options: SelectOption<T>[];
   onChange: (value: T) => void;
   disabled?: boolean;
@@ -24,7 +25,7 @@ interface Position {
 const ROW_HEIGHT = 32;
 const MAX_LIST = 260;
 
-export function Select<T extends string | number>({ value, options, onChange, disabled }: SelectProps<T>) {
+export function Select<T extends string | number>({ value, options, onChange, disabled, placeholder }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const [pos, setPos] = useState<Position | null>(null);
@@ -32,7 +33,8 @@ export function Select<T extends string | number>({ value, options, onChange, di
   const list = useRef<HTMLUListElement>(null);
   const listId = useId();
 
-  const selectedIndex = Math.max(0, options.findIndex((o) => o.value === value));
+  const selectedIndex = options.findIndex((o) => o.value === value);
+  const startIndex = Math.max(0, selectedIndex);
   const current = options[selectedIndex];
 
   const openList = () => {
@@ -46,7 +48,7 @@ export function Select<T extends string | number>({ value, options, onChange, di
       width: rect.width,
       ...(above ? { bottom: window.innerHeight - rect.top + 4 } : { top: rect.bottom + 4 }),
     });
-    setActive(selectedIndex);
+    setActive(startIndex);
     setOpen(true);
   };
 
@@ -129,7 +131,7 @@ export function Select<T extends string | number>({ value, options, onChange, di
       default: {
         if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
         const letter = e.key.toLowerCase();
-        const from = open ? active : selectedIndex;
+        const from = open ? active : startIndex;
         const order = [...options.keys()];
         const next = [...order.slice(from + 1), ...order.slice(0, from + 1)].find((i) =>
           options[i].label.toLowerCase().startsWith(letter),
@@ -156,7 +158,7 @@ export function Select<T extends string | number>({ value, options, onChange, di
         onClick={() => (open ? close(false) : openList())}
         onKeyDown={onKeyDown}
       >
-        <span>{current?.label}</span>
+        <span className={current ? undefined : 'select-placeholder'}>{current?.label ?? placeholder ?? ''}</span>
         <ChevronDown size={14} aria-hidden="true" />
       </button>
       {open && pos

@@ -82,8 +82,8 @@ const roster: [string, Agency, number][] = [
 ];
 
 export function startingUnits(): Unit[] {
-  return roster.map(([name, agency, postal]) => {
+  return roster.map(([name, agency, postal], i) => {
     const p = postalById.get(postal)!;
-    return { id: name, name, agency, status: 'available', x: p.x, y: p.y, route: [], trail: [] };
+    return { id: name, name, agency, status: 'available', x: p.x, y: p.y, route: [], trail: [], wait: 0.3 + i * 0.7 };
   });
 }

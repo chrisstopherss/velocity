@@ -38,6 +38,14 @@
           "mood": "tense but trying to stay calm"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "injuries",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Shots heard, someone running",
@@ -136,6 +144,14 @@
           "mood": "anxious and speaking quietly"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "injuries",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Loud argument, something broke",
@@ -232,6 +248,13 @@
           "name": "Omar L.",
           "mood": "matter of fact, wants it checked out"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "suspect",
+        "safety"
       ],
       "variants": [
         {
@@ -330,6 +353,12 @@
           "mood": "calm but worried about the drivers"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "injuries",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Head on, one rolled over",
@@ -425,6 +454,14 @@
           "name": "Mei C.",
           "mood": "nervous, talking quickly"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "injuries",
+        "suspect",
+        "safety"
       ],
       "variants": [
         {
@@ -522,6 +559,14 @@
           "mood": "calm, an employee used to dealing with trouble"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "injuries",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Punches in a parking lot",
@@ -617,6 +662,12 @@
           "name": "Tess O.",
           "mood": "worried and a bit tearful"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "injuries",
+        "safety"
       ],
       "variants": [
         {
@@ -714,6 +765,12 @@
           "mood": "an employee passing by, curious"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Door and motion sensors",
@@ -810,6 +867,14 @@
           "name": "Colin E.",
           "mood": "calm on the surface, clearly shaken"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "injuries",
+        "suspect",
+        "safety"
       ],
       "variants": [
         {
@@ -909,6 +974,13 @@
           "mood": "calm, trying to give a clear description"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "injuries",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Drunk driver swerving",
@@ -1005,6 +1077,13 @@
           "mood": "a witness, helpful and curious"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "injuries",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Parked car hit",
@@ -1100,6 +1179,12 @@
           "name": "Hana W.",
           "mood": "calm, has tried talking to them already"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "suspect",
+        "safety"
       ],
       "variants": [
         {
@@ -1198,6 +1283,12 @@
           "mood": "calm and methodical, writing things down"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Car gone from the lot",
@@ -1241,7 +1332,15 @@
           "weapons": "A black handgun.",
           "injuries": "I fell and scraped my knee, I am fine otherwise.",
           "suspect": "Man in a black hoodie and jeans, heading north in my silver sedan.",
-          "safety": "I am on the sidewalk, shaking, he is gone."
+          "safety": "I am on the sidewalk, shaking, he is gone.",
+          "questions": [
+            "location",
+            "nature",
+            "weapons",
+            "injuries",
+            "suspect",
+            "safety"
+          ]
         },
         {
           "label": "Forgot where I parked",
@@ -1294,6 +1393,13 @@
           "name": "Reggie J.",
           "mood": "nervous about confronting anyone"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "suspect",
+        "safety"
       ],
       "variants": [
         {
@@ -1391,6 +1497,13 @@
           "mood": "retired, chatty, very observant"
         }
       ],
+      "questions": [
+        "location",
+        "nature",
+        "weapons",
+        "suspect",
+        "safety"
+      ],
       "variants": [
         {
           "label": "Trying car door handles",
@@ -1487,6 +1600,12 @@
           "name": "Samir P.",
           "mood": "impatient, in a hurry"
         }
+      ],
+      "questions": [
+        "location",
+        "nature",
+        "injuries",
+        "safety"
       ],
       "variants": [
         {

@@ -36,7 +36,6 @@ export const priorityStyle: Record<Priority, { fill: string; ink: string }> = {
 const MIN_STEP = 3;
 
 export function headingOf(unit: Pick<Unit, 'x' | 'y' | 'status' | 'route'>): number | null {
-  if (unit.status !== 'enroute') return null;
   const next = unit.route.find((p) => Math.hypot(p.x - unit.x, p.y - unit.y) > MIN_STEP);
   if (!next) return null;
   return (Math.atan2(next.x - unit.x, unit.y - next.y) * 180) / Math.PI;

@@ -1,11 +1,12 @@
 import file from '@velocity/scenarios/scenarios.json';
-import type { Agency, IncidentTypeId, Priority, Scenario, ScenarioPick } from '../game/types';
+import type { Agency, Fact, IncidentTypeId, Priority, Scenario, ScenarioPick } from '../game/types';
 
 export interface Variant {
   label: string;
   priority: Priority;
   minUnits: number;
   type?: IncidentTypeId;
+  questions?: Fact[];
   location?: string;
   behavior?: string;
   opening: string;
@@ -21,6 +22,7 @@ export interface Template {
   title: string;
   type: IncidentTypeId;
   agencies: Agency[];
+  questions: Fact[];
   ringAfter: [number, number];
   places: number[];
   callers: { name: string; mood: string }[];
@@ -51,6 +53,7 @@ export function instantiate(template: Template, pick: ScenarioPick, ringAfter?: 
     pick,
     title: template.title,
     label: variant.label,
+    questions: variant.questions ?? template.questions,
     locationOverride: variant.location,
     caller: caller.name,
     ringAfter: ringAfter ?? template.ringAfter[0],

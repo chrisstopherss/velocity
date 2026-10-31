@@ -37,6 +37,7 @@ export interface ScenarioPick {
 export interface Scenario {
   id: string;
   pick: ScenarioPick;
+  questions: Fact[];
   label: string;
   locationOverride?: string;
   title: string;
@@ -69,6 +70,7 @@ export interface Unit {
   y: number;
   route: Point[];
   trail: Point[];
+  wait: number;
 }
 
 export interface RadioLine {

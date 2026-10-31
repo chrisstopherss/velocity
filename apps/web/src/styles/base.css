@@ -546,6 +546,10 @@ textarea {
   filter: brightness(0.85);
 }
 
+.select-placeholder {
+  color: var(--muted);
+}
+
 .map-street {
   fill: #cdd5e3;
   font-weight: 600;

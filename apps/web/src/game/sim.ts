@@ -1,8 +1,13 @@
-import { postalById } from '../data/postals';
+import { postalById, postals } from '../data/postals';
+import { mulberry32 } from '../data/scenarios';
 import { roadGraph, routeBetween, type RoadGraph } from './routing';
 import type { Point, Unit } from './types';
 
 export const UNIT_SPEED = 60;
+export const PATROL_SPEED = UNIT_SPEED * 0.5;
+const PATROL_PAUSE = 1.5;
+const PATROL_MIN = 120;
+const PATROL_MAX = 750;
 
 export function distance(ax: number, ay: number, bx: number, by: number): number {
   return Math.hypot(bx - ax, by - ay);
@@ -21,11 +26,12 @@ export function etaSeconds(unit: Pick<Unit, 'x' | 'y'>, postal: number, graph: R
 }
 
 export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean } {
-  if (unit.status !== 'enroute' || !unit.route.length) {
+  if (unit.status === 'onscene' || !unit.route.length) {
     return { unit, arrived: false };
   }
+  const responding = unit.status === 'enroute';
   let { x, y } = unit;
-  let budget = UNIT_SPEED * dt;
+  let budget = (responding ? UNIT_SPEED : PATROL_SPEED) * dt;
   let i = 0;
   const passed: Point[] = [];
   while (i < unit.route.length) {
@@ -35,7 +41,7 @@ export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean
       const k = budget / left;
       x += (next.x - x) * k;
       y += (next.y - y) * k;
-      const trail = passed.length ? [...unit.trail, ...passed] : unit.trail;
+      const trail = responding && passed.length ? [...unit.trail, ...passed] : unit.trail;
       return { unit: { ...unit, x, y, route: unit.route.slice(i), trail }, arrived: false };
     }
     budget -= left;
@@ -44,7 +50,24 @@ export function stepUnit(unit: Unit, dt: number): { unit: Unit; arrived: boolean
     passed.push(next);
     i++;
   }
-  return { unit: { ...unit, x, y, route: [], trail: [], status: 'onscene' }, arrived: true };
+  if (responding) {
+    return { unit: { ...unit, x, y, route: [], trail: [], status: 'onscene' }, arrived: true };
+  }
+  return { unit: { ...unit, x, y, route: [], wait: PATROL_PAUSE }, arrived: false };
+}
+
+const hash = (text: string) => [...text].reduce((h, c) => (Math.imul(h, 31) + c.charCodeAt(0)) | 0, 7);
+
+// a nearby postal to cruise to, chosen from the shift seed so a game replays the same way
+export function patrolRoute(unit: Unit, seed: number, clock: number): Point[] {
+  const rand = mulberry32(seed + hash(unit.id) + Math.floor(clock * 10));
+  const near = postals.filter((p) => {
+    const d = distance(unit.x, unit.y, p.x, p.y);
+    return d > PATROL_MIN && d < PATROL_MAX;
+  });
+  const pool = near.length ? near : postals;
+  const target = pool[Math.floor(rand() * pool.length)];
+  return routeToPostal(unit, target.id) ?? [];
 }
 
 export function nearestPostal(x: number, y: number): number | null {

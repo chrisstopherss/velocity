@@ -85,7 +85,7 @@ function CallTaker({ g }: { g: GameApi }) {
       </div>
       <AskBox g={g} />
       <ul className="checklist">
-        {factOrder.map((f) => (
+        {factOrder.filter((f) => scenario.questions.includes(f)).map((f) => (
           <li key={f}>
             <button
               type="button"
@@ -107,8 +107,8 @@ function CallTaker({ g }: { g: GameApi }) {
 function IncidentForm({ g }: { g: GameApi }) {
   const { state, dispatch } = g;
   const { phase, incident } = state;
-  const [type, setType] = useState<IncidentTypeId>('suspicious_vehicle');
-  const [priority, setPriority] = useState<Priority>(3);
+  const [type, setType] = useState<IncidentTypeId | ''>('');
+  const [priority, setPriority] = useState<Priority | ''>('');
   const [postal, setPostal] = useState('');
   const [narrative, setNarrative] = useState('');
 
@@ -126,17 +126,17 @@ function IncidentForm({ g }: { g: GameApi }) {
       className="incident-form"
       onSubmit={(e) => {
         e.preventDefault();
-        if (!found) return;
+        if (!found || !type || !priority) return;
         dispatch({ type: 'create', draft: { type, priority, postal: postalNumber, narrative } });
       }}
     >
       <label>
         Type
-        <Select value={incident?.type ?? type} options={typeOptions} disabled={!editable} onChange={setType} />
+        <Select value={incident?.type ?? type} options={typeOptions} placeholder="Select a type" disabled={!editable} onChange={setType} />
       </label>
       <label>
         Priority
-        <Select value={incident?.priority ?? priority} options={priorityOptions} disabled={!editable} onChange={setPriority} />
+        <Select value={incident?.priority ?? priority} options={priorityOptions} placeholder="Select a priority" disabled={!editable} onChange={setPriority} />
       </label>
       <label>
         Postal
@@ -169,7 +169,7 @@ function IncidentForm({ g }: { g: GameApi }) {
       <div className="form-actions wide">
         {phase === 'call' ? (
           <>
-            <button type="submit" className="btn primary" disabled={!found}>
+            <button type="submit" className="btn primary" disabled={!found || !type || !priority}>
               <ClipboardList size={14} aria-hidden="true" />
               Create incident
             </button>
