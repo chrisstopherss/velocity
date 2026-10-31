@@ -1,11 +1,12 @@
-import { CarFront, Locate, Map as MapIcon, MapPin, Maximize, Search } from 'lucide-react';
+import { Locate, Map as MapIcon, Maximize, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { postalById, postals } from '../data/postals';
 import { streetLabels } from '../data/streets';
 import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
-import type { Agency, Point } from '../game/types';
+import type { Point } from '../game/types';
 import { Panel } from '../ui/Panel';
+import { IncidentMarker, UnitMarker } from './MapMarkers';
 import { RouteLine } from './RouteLine';
 
 const MAP_SIZE = 1932;
@@ -14,8 +15,6 @@ const FULL = { x: 0, y: 0, w: MAP_SIZE };
 const START = { x: 760, y: 820, w: 900 };
 const POSTAL_LABEL_ZOOM = 1000;
 const STREET_LABEL_ZOOM = 1100;
-
-const agencyColor: Record<Agency, string> = { PD: '#3b82f6', SO: '#10b981', SP: '#e0932e' };
 
 interface View {
   x: number;
@@ -159,13 +158,6 @@ export function MapView({ g }: { g: GameApi }) {
         <rect width={MAP_SIZE} height={MAP_SIZE} fill="#1c2a1f" />
         <image href="/map/erlc-map.webp" width={MAP_SIZE} height={MAP_SIZE} className="map-img" />
 
-        {incidentPostal ? (
-          <g transform={`translate(${incidentPostal.x} ${incidentPostal.y})`}>
-            <circle r={17 * scale} fill="#e0932e" stroke="#0b0c0f" strokeWidth={3 * scale} />
-            <MapPin x={-11 * scale} y={-12 * scale} size={22 * scale} color="#fff" strokeWidth={2} />
-          </g>
-        ) : null}
-
         {view.w <= STREET_LABEL_ZOOM ? (
           <>
             <defs>
@@ -185,7 +177,14 @@ export function MapView({ g }: { g: GameApi }) {
 
         {view.w <= POSTAL_LABEL_ZOOM
           ? postals
-              .filter((p) => p.x > view.x - 20 && p.x < view.x + view.w + 20 && p.y > view.y - 20 && p.y < view.y + h + 20)
+              .filter(
+                (p) =>
+                  p.id !== incidentPostal?.id &&
+                  p.x > view.x - 20 &&
+                  p.x < view.x + view.w + 20 &&
+                  p.y > view.y - 20 &&
+                  p.y < view.y + h + 20,
+              )
               .map((p) => (
                 <text key={p.id} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize={12 * scale} className="map-postal">
                   {p.id}
@@ -208,14 +207,12 @@ export function MapView({ g }: { g: GameApi }) {
             />
           ))}
 
+        {incidentPostal && state.incident ? (
+          <IncidentMarker x={incidentPostal.x} y={incidentPostal.y} priority={state.incident.priority} scale={scale} />
+        ) : null}
+
         {state.units.map((u) => (
-          <g key={u.id} transform={`translate(${u.x} ${u.y})`}>
-            <circle r={13 * scale} fill={agencyColor[u.agency]} stroke="#0b0c0f" strokeWidth={3 * scale} />
-            <CarFront x={-9 * scale} y={-9 * scale} size={18 * scale} color="#fff" strokeWidth={2} />
-            <text y={-19 * scale} textAnchor="middle" fontSize={15 * scale} className="map-label">
-              {u.name}
-            </text>
-          </g>
+          <UnitMarker key={u.id} unit={u} scale={scale} />
         ))}
       </svg>
     </Panel>

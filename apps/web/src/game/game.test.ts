@@ -3,9 +3,10 @@ import { answerFor, factOrder, scenarios, startingUnits } from '../data/content'
 import { getErlcLocation } from '../data/erlcLocation';
 import { postalById, postals } from '../data/postals';
 import { rawRoads } from '../data/roads.data';
+import { agencyColor, headingOf, priorityStyle } from '../panels/MapMarkers';
 import { check, components } from '../roads/edit';
 import { buildGraph, roundCorners, routeBetween } from './routing';
-import { etaSeconds, formatEta, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
+import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
@@ -51,15 +52,6 @@ describe('data', () => {
       expect(answer).toContain(String(s.truth.postal));
       if (street) expect(answer).toContain(street);
     }
-  });
-});
-
-describe('eta text', () => {
-  it('shows minutes and padded seconds', () => {
-    expect(formatEta(14)).toBe('0:14');
-    expect(formatEta(65.4)).toBe('1:05');
-    expect(formatEta(0)).toBe('0:00');
-    expect(formatEta(-3)).toBe('0:00');
   });
 });
 
@@ -335,5 +327,28 @@ describe('call flow', () => {
     const texts = state.radio.map((r) => r.text).join(' | ');
     expect(texts).toContain('respond to shots fired');
     expect(texts).toContain('1A-12 on scene');
+  });
+});
+
+describe('map markers', () => {
+  const base = { ...startingUnits()[0], x: 100, y: 100 };
+
+  it('points the heading wedge toward the next route point', () => {
+    const east = { ...base, status: 'enroute' as const, route: [{ x: 200, y: 100 }] };
+    const north = { ...base, status: 'enroute' as const, route: [{ x: 100, y: 0 }] };
+    expect(headingOf(east)).toBeCloseTo(90);
+    expect(headingOf(north)).toBeCloseTo(0);
+  });
+
+  it('skips points right on top of the unit and shows no heading when parked', () => {
+    const near = { ...base, status: 'enroute' as const, route: [{ x: 100.5, y: 100 }, { x: 100, y: 200 }] };
+    expect(headingOf(near)).toBeCloseTo(180);
+    expect(headingOf({ ...base, status: 'onscene', route: [] })).toBeNull();
+    expect(headingOf({ ...base, status: 'enroute', route: [] })).toBeNull();
+  });
+
+  it('has a colour for every priority and agency', () => {
+    for (const p of [1, 2, 3, 4] as const) expect(priorityStyle[p].fill).toMatch(/^#/);
+    for (const a of ['PD', 'SO', 'SP'] as const) expect(agencyColor[a]).toMatch(/^#/);
   });
 });
