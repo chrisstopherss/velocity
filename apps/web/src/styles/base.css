@@ -546,6 +546,16 @@ textarea {
   filter: brightness(0.85);
 }
 
+.map-postal {
+  fill: #e8eaef;
+  font-weight: 600;
+  paint-order: stroke;
+  stroke: #0b0c0f;
+  stroke-width: 0.3em;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
 .map-label {
   fill: #fff;
   font-weight: 700;

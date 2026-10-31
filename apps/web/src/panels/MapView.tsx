@@ -1,6 +1,6 @@
 import { CarFront, Locate, Map as MapIcon, MapPin, Maximize, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
-import { postalById } from '../data/postals';
+import { postalById, postals } from '../data/postals';
 import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import type { Agency, Point } from '../game/types';
@@ -10,6 +10,7 @@ const MAP_SIZE = 1932;
 const ASPECT = 1.6;
 const FULL = { x: 0, y: 0, w: MAP_SIZE };
 const START = { x: 760, y: 820, w: 900 };
+const POSTAL_LABEL_ZOOM = 1000;
 
 const agencyColor: Record<Agency, string> = { PD: '#3b82f6', SO: '#10b981', SP: '#e0932e' };
 
@@ -149,6 +150,16 @@ export function MapView({ g }: { g: GameApi }) {
           </g>
         ) : null}
 
+        {view.w <= POSTAL_LABEL_ZOOM
+          ? postals
+              .filter((p) => p.x > view.x - 20 && p.x < view.x + view.w + 20 && p.y > view.y - 20 && p.y < view.y + h + 20)
+              .map((p) => (
+                <text key={p.id} x={p.x} y={p.y} textAnchor="middle" dominantBaseline="central" fontSize={12 * scale} className="map-postal">
+                  {p.id}
+                </text>
+              ))
+          : null}
+
         {previews.map((p) => (
           <polyline
             key={`preview-${p.id}`}
@@ -181,7 +192,7 @@ export function MapView({ g }: { g: GameApi }) {
           <g key={u.id} transform={`translate(${u.x} ${u.y})`}>
             <circle r={13 * scale} fill={agencyColor[u.agency]} stroke="#0b0c0f" strokeWidth={3 * scale} />
             <CarFront x={-9 * scale} y={-9 * scale} size={18 * scale} color="#fff" strokeWidth={2} />
-            <text x={17 * scale} y={5 * scale} fontSize={15 * scale} className="map-label">
+            <text y={-19 * scale} textAnchor="middle" fontSize={15 * scale} className="map-label">
               {u.name}
             </text>
           </g>

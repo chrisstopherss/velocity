@@ -4,7 +4,7 @@ import { getErlcLocation } from '../data/erlcLocation';
 import { postalById, postals } from '../data/postals';
 import { rawRoads } from '../data/roads.data';
 import { check, components } from '../roads/edit';
-import { buildGraph, routeBetween } from './routing';
+import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
@@ -136,6 +136,33 @@ describe('roads', () => {
     expect(route.onRoad).toBe(true);
     expect(route.length).toBeCloseTo(200);
     expect(route.points[route.points.length - 1]).toEqual({ x: 100, y: 100 });
+  });
+
+  it('joins the road partway along a long segment instead of at its end nodes', () => {
+    const long = buildGraph({
+      nodes: [
+        [0, 0],
+        [1000, 0],
+      ],
+      edges: [[0, 1]],
+    });
+    const route = routeBetween(long, { x: 500, y: 12 }, { x: 900, y: 12 });
+    expect(route.onRoad).toBe(true);
+    expect(route.length).toBeCloseTo(424, 0);
+  });
+
+  it('rounds corners without moving the ends', () => {
+    const raw = [
+      { x: 0, y: 0 },
+      { x: 100, y: 0 },
+      { x: 100, y: 100 },
+    ];
+    const smooth = roundCorners(raw);
+    expect(smooth[0]).toEqual(raw[0]);
+    expect(smooth.at(-1)).toEqual(raw[2]);
+    expect(smooth.length).toBeGreaterThan(raw.length);
+    expect(smooth.every((p) => !(p.x === 100 && p.y === 0))).toBe(true);
+    for (const p of smooth) expect(Math.hypot(p.x - 100, p.y - 0)).toBeGreaterThan(0.5);
   });
 
   it('falls back to a straight line when the target is cut off', () => {

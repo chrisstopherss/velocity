@@ -2,7 +2,7 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import { askCaller, fetchAiEnabled } from './ai';
 import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 
-const TICK_SECONDS = 0.1;
+const TICK_SECONDS = 1 / 30;
 
 export function hintFor(state: GameState): string {
   switch (state.phase) {
