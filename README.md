@@ -48,7 +48,7 @@ npm run typecheck
 - `apps/web` is the React and Vite front end. The game rules live in `src/game`, the call scripts and unit roster in `src/data`, and each theme has its own shell in `src/shells`.
 - `apps/server` is a small Fastify server. For now it serves the built web app and a health check at `/api/health`.
 
-The simulation runs in the browser. Postals, buildings and road lines come from `apps/web/src/data/erlc-map-data.json`, in game coordinates. `getErlcLocation(x, z)` in `erlcLocation.ts` turns a position into a street, building and postal, with no network calls. `npm run build:postals` rebuilds `postals.data.ts` from that file, converting game coordinates to positions on the map image with a fitted transform. There are no landmark names in the data, so calls give a street and postal only.
+The simulation runs in the browser. Postals, buildings and road lines come from `apps/web/src/data/erlc-map-data.json`, in game coordinates. `getErlcLocation(x, z)` in `erlcLocation.ts` turns a position into a street, building and postal, with no network calls. `npm run build:postals` rebuilds `postals.data.ts` from that file, converting game coordinates to positions on the map image with a fitted transform. There are no landmark names in the data, so calls give a street and postal only. The map image has no text, so the app draws postal numbers and street names itself once you zoom in. The street lines come from `npm run build:streets`.
 
 ## Roads
 

@@ -546,6 +546,18 @@ textarea {
   filter: brightness(0.85);
 }
 
+.map-street {
+  fill: #cdd5e3;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  paint-order: stroke;
+  stroke: #0b0c0f;
+  stroke-width: 0.32em;
+  stroke-linejoin: round;
+  pointer-events: none;
+  opacity: 0.92;
+}
+
 .map-postal {
   fill: #e8eaef;
   font-weight: 600;

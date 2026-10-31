@@ -1,6 +1,7 @@
 import { CarFront, Locate, Map as MapIcon, MapPin, Maximize, Search } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState, type PointerEvent, type WheelEvent } from 'react';
 import { postalById, postals } from '../data/postals';
+import { streetLabels } from '../data/streets';
 import { routeToPostal } from '../game/sim';
 import type { GameApi } from '../game/useGame';
 import type { Agency, Point } from '../game/types';
@@ -11,6 +12,7 @@ const ASPECT = 1.6;
 const FULL = { x: 0, y: 0, w: MAP_SIZE };
 const START = { x: 760, y: 820, w: 900 };
 const POSTAL_LABEL_ZOOM = 1000;
+const STREET_LABEL_ZOOM = 1100;
 
 const agencyColor: Record<Agency, string> = { PD: '#3b82f6', SO: '#10b981', SP: '#e0932e' };
 
@@ -62,6 +64,19 @@ export function MapView({ g }: { g: GameApi }) {
 
   const h = view.w / ASPECT;
   const scale = view.w / 900;
+
+  const streets = useMemo(() => {
+    if (view.w > STREET_LABEL_ZOOM) return [];
+    const wide = 11 * 0.62 * (view.w / 900) * 1.2;
+    return streetLabels.filter(
+      (s) =>
+        s.length >= s.name.length * wide &&
+        s.box[2] > view.x &&
+        s.box[0] < view.x + view.w &&
+        s.box[3] > view.y &&
+        s.box[1] < view.y + view.w / ASPECT,
+    );
+  }, [view.x, view.y, view.w]);
 
   const onWheel = (e: WheelEvent) => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -148,6 +163,23 @@ export function MapView({ g }: { g: GameApi }) {
             <circle r={17 * scale} fill="#e0932e" stroke="#0b0c0f" strokeWidth={3 * scale} />
             <MapPin x={-11 * scale} y={-12 * scale} size={22 * scale} color="#fff" strokeWidth={2} />
           </g>
+        ) : null}
+
+        {view.w <= STREET_LABEL_ZOOM ? (
+          <>
+            <defs>
+              {streets.map((s) => (
+                <path key={s.id} id={`street-${s.id}`} d={s.d} />
+              ))}
+            </defs>
+            {streets.map((s) => (
+              <text key={s.id} fontSize={11 * scale} dy="0.35em" className="map-street">
+                <textPath href={`#street-${s.id}`} startOffset="50%" textAnchor="middle">
+                  {s.name}
+                </textPath>
+              </text>
+            ))}
+          </>
         ) : null}
 
         {view.w <= POSTAL_LABEL_ZOOM

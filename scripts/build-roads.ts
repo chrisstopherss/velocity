@@ -1,6 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { CX, CZ, KX, KZ } from './transform.ts';
 
 type P = [number, number];
 
@@ -8,11 +9,6 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dataFile = path.join(here, '..', 'apps', 'web', 'src', 'data', 'erlc-map-data.json');
 const outFile = path.join(here, '..', 'apps', 'web', 'src', 'data', 'roads.data.ts');
 
-// same transform as build-postals.ts
-const KX = 0.3589;
-const CX = 3.5;
-const KZ = 0.3598;
-const CZ = 2.8;
 
 // game units
 const SIMPLIFY = 5;
