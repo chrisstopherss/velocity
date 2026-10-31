@@ -52,7 +52,7 @@ The simulation runs in the browser. Postals, buildings and road lines come from 
 
 ## Roads
 
-Units follow a graph of roads (`apps/web/src/data/roads.data.ts`) and take the shortest path to the call. When you tick units to dispatch, the map draws each one's route first. The starting graph was traced from the map image and is rough in places, mostly on the cliffs and in the countryside. Open `/#roads` to fix it: click to add nodes, click two nodes to link or unlink them, drag to move, and the toolbar warns you about postals that can't be reached. Download the result and replace `roads.data.ts`.
+Units follow a graph of roads (`apps/web/src/data/roads.data.ts`) and take the shortest path to the call. When you tick units to dispatch, the map draws each one's route first. The graph is generated from the road lines in `erlc-map-data.json` by `npm run build:roads`. Roads that cross or end on another road get a junction, and a few small gaps between separate pieces are joined (the script prints them). It doesn't know about one-way lanes or overpasses, so a road that crosses another without a junction in the real game will get one here. Open `/#roads` to fix things by hand: click to add nodes, click two nodes to link or unlink them, drag to move, and the toolbar warns you about postals that can't be reached. Download the result and replace `roads.data.ts`. Running `build:roads` again overwrites hand edits.
 
 ## AI callers
 

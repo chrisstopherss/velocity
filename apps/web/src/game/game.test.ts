@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { answerFor, factOrder, scenarios, startingUnits } from '../data/content';
 import { getErlcLocation } from '../data/erlcLocation';
 import { postalById, postals } from '../data/postals';
+import { rawRoads } from '../data/roads.data';
+import { check, components } from '../roads/edit';
 import { buildGraph, routeBetween } from './routing';
-import { etaSeconds, routeToPostal, stepUnit } from './sim';
+import { etaSeconds, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
 function run(state: GameState, actions: Action[]): GameState {
@@ -151,10 +153,26 @@ describe('roads', () => {
     }
   });
 
+  it('ships one connected road network', () => {
+    const comp = components({ nodes: rawRoads.nodes, edges: rawRoads.edges });
+    expect(new Set(comp).size).toBe(1);
+    expect(check({ nodes: rawRoads.nodes, edges: rawRoads.edges }, postals).cutOff).toEqual([]);
+  });
+
   it('gives every postal a road route from the first unit', () => {
     const unit = startingUnits()[0];
-    const onRoad = [...postalById.keys()].filter((id) => (routeToPostal(unit, id)?.length ?? 0) > 2);
-    expect(onRoad.length).toBeGreaterThan(postalById.size * 0.9);
+    const onRoad = [...postalById.keys()].filter((id) => routeToPostal(unit, id)!.length > 2);
+    expect(onRoad.length).toBeGreaterThanOrEqual(postalById.size - 3);
+  });
+
+  it('keeps routes close to the straight line distance', () => {
+    const unit = startingUnits()[0];
+    for (const p of postals) {
+      const eta = etaSeconds(unit, p.id)!;
+      const straight = Math.hypot(p.x - unit.x, p.y - unit.y) / UNIT_SPEED;
+      expect(eta).toBeGreaterThanOrEqual(straight - 0.01);
+      expect(eta).toBeLessThan(straight * 4 + 20);
+    }
   });
 });
 
