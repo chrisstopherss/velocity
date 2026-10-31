@@ -5,6 +5,10 @@ import { postalById } from '../data/postals';
 import type { GameApi } from '../game/useGame';
 import type { IncidentTypeId, Priority } from '../game/types';
 import { Panel } from '../ui/Panel';
+import { Select } from '../ui/Select';
+
+const typeOptions = incidentTypes.map((t) => ({ value: t.id, label: t.label }));
+const priorityOptions = priorities.map((p) => ({ value: p.id, label: p.label }));
 
 function CallTaker({ g }: { g: GameApi }) {
   const { state, dispatch } = g;
@@ -89,27 +93,11 @@ function IncidentForm({ g }: { g: GameApi }) {
     >
       <label>
         Type
-        <select value={incident?.type ?? type} disabled={!editable} onChange={(e) => setType(e.target.value as IncidentTypeId)}>
-          {incidentTypes.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.label}
-            </option>
-          ))}
-        </select>
+        <Select value={incident?.type ?? type} options={typeOptions} disabled={!editable} onChange={setType} />
       </label>
       <label>
         Priority
-        <select
-          value={incident?.priority ?? priority}
-          disabled={!editable}
-          onChange={(e) => setPriority(Number(e.target.value) as Priority)}
-        >
-          {priorities.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.label}
-            </option>
-          ))}
-        </select>
+        <Select value={incident?.priority ?? priority} options={priorityOptions} disabled={!editable} onChange={setPriority} />
       </label>
       <label>
         Postal

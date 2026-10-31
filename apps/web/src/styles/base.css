@@ -339,7 +339,6 @@ textarea {
 }
 
 .incident-form input,
-.incident-form select,
 .incident-form textarea {
   padding: 5px 8px;
   border: 1px solid var(--line);
@@ -350,6 +349,97 @@ textarea {
 
 .incident-form textarea {
   resize: vertical;
+}
+
+.select {
+  display: block;
+}
+
+.select-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--panel2);
+  font-weight: 400;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.select-btn:hover:not(:disabled) {
+  border-color: #3b4252;
+}
+
+.select-btn:focus-visible {
+  outline: 2px solid var(--acc);
+  outline-offset: 1px;
+}
+
+.select-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.select-btn svg {
+  flex: none;
+  color: var(--muted);
+  transition: transform 0.18s;
+}
+
+.select-btn[aria-expanded='true'] svg {
+  transform: rotate(180deg);
+}
+
+.select-list {
+  position: fixed;
+  z-index: 30;
+  margin: 0;
+  padding: 4px;
+  max-height: 260px;
+  overflow: auto;
+  list-style: none;
+  font: var(--font);
+  color: var(--text);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) * 0.7);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
+  animation: drop 0.14s ease both;
+}
+
+.select-opt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  border-radius: calc(var(--radius) / 2.5);
+  cursor: pointer;
+}
+
+.select-opt.active {
+  background: rgba(79, 140, 255, 0.16);
+}
+
+.select-opt.selected {
+  color: #a9c6ff;
+  font-weight: 600;
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .lookup {

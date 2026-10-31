@@ -225,6 +225,44 @@
   color: #fff;
 }
 
+[data-theme='classic'] .select-btn {
+  border: 2px solid;
+  border-color: #555 #ddd #ddd #555;
+  background: #e8e8e8;
+  color: #000;
+  font: 700 12px Arial, sans-serif;
+}
+
+[data-theme='classic'] .select-btn svg {
+  color: #222;
+}
+
+[data-theme='classic'] .select-list {
+  padding: 0;
+  background: #000;
+  border: 2px solid;
+  border-color: #ddd #555 #555 #ddd;
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  font: 700 12px Arial, sans-serif;
+}
+
+[data-theme='classic'] .select-opt {
+  padding: 4px 8px;
+}
+
+[data-theme='classic'] .select-opt.active {
+  background: #3a6ea5;
+  color: #fff;
+}
+
+[data-theme='classic'] .select-opt.selected {
+  color: #ffff50;
+}
+
+[data-theme='classic'] .select-opt.active.selected {
+  color: #fff;
+}
+
 [data-theme='classic'] .score-card {
   border: 2px solid;
   border-color: #7a7a7a #161616 #161616 #7a7a7a;
