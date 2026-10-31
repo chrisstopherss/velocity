@@ -27,7 +27,7 @@ textarea {
 }
 
 :root[data-theme='modern'] {
-  --font: 13px Inter, system-ui, 'Segoe UI', sans-serif;
+  --font: 13px 'Inter Variable', Inter, system-ui, 'Segoe UI', sans-serif;
   --bg: #0b0c0f;
   --panel: #121317;
   --panel2: #191b21;
