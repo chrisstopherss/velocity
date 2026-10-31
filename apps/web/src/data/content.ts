@@ -18,6 +18,8 @@ export const incidentTypes: { id: IncidentTypeId; label: string }[] = [
   { id: 'trespass', label: 'Trespassing' },
   { id: 'suspicious_person', label: 'Suspicious person' },
   { id: 'disabled_vehicle', label: 'Disabled vehicle' },
+  { id: 'theft', label: 'Theft' },
+  { id: 'false_report', label: 'False report, no response' },
 ];
 
 export const priorities: { id: Priority; label: string }[] = [
@@ -56,8 +58,12 @@ export function callerLocation(postal: number): string {
   return `I am on ${where}. The postal is ${postal}.`;
 }
 
+export function locationFor(scenario: Scenario): string {
+  return scenario.locationOverride ?? callerLocation(scenario.truth.postal);
+}
+
 export function answerFor(scenario: Scenario, fact: Fact): string {
-  return fact === 'location' ? callerLocation(scenario.truth.postal) : scenario.answers[fact];
+  return fact === 'location' ? locationFor(scenario) : scenario.answers[fact];
 }
 
 const agencyNames: Record<Agency, string> = { PD: 'Police', SO: 'Sheriff', SP: 'State Patrol' };

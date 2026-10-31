@@ -67,9 +67,11 @@ It is built to be cheap and hard to abuse:
 
 ## Calls
 
-Calls live in `packages/scenarios/scenarios.json`, which both the game and the AI server read. Each template is one kind of call (shots fired, burglary, robbery and so on) with a type, priority, the agencies that fit, and how many units it needs. A template also has a few callers, a few variants and a list of postals where it can happen. Each variant is a coherent set of answers: the opening line and what the caller says about the nature of the call, weapons, injuries, the suspect and their own safety. When a call comes in, the game picks a template, then a caller, a variant and a place, so the same kind of call plays differently each time. The first call is random too.
+Calls live in `packages/scenarios/scenarios.json`, which both the game and the AI server read. Each template is one kind of call (shots fired, burglary, robbery and so on) with five variants, and every variant is a different version of that call with its own truth. Shots fired, for example, can be an active shooter, shots heard with someone running, a man firing a pistol, someone who heard fireworks and is not sure, or a prank caller. A variant sets its own priority and how many units it really needs, and some need none at all: a prank, a misunderstanding, or something already resolved. For those the right move is to log it as a false report and use Close without units. Sending units to one costs you points.
 
-To add a call, add a template and run the tests. They check that the postals exist, every answer is filled in, and the text passes the content filter. Calls are for adults only: no children, nothing sexual, no gore, no self-harm.
+A template also has a few callers and a list of postals where it can happen. Every call is chosen at random, including the first, and the same kind of call never comes twice in a row. After a call closes, the score card tells you what the call really was.
+
+To add a call, add a variant or a template and run the tests. They check that the postals exist, every answer is filled in, the not real variants say how the caller behaves, and the text passes the content filter. Calls are for adults only: no children, nothing sexual, no gore, no self-harm.
 
 ## Keys
 

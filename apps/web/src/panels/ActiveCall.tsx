@@ -168,14 +168,26 @@ function IncidentForm({ g }: { g: GameApi }) {
       </label>
       <div className="form-actions wide">
         {phase === 'call' ? (
-          <button type="submit" className="btn primary" disabled={!found}>
-            <ClipboardList size={14} aria-hidden="true" />
-            Create incident
-          </button>
+          <>
+            <button type="submit" className="btn primary" disabled={!found}>
+              <ClipboardList size={14} aria-hidden="true" />
+              Create incident
+            </button>
+            <button type="button" className="btn" onClick={() => dispatch({ type: 'dismiss' })}>
+              Close without units
+            </button>
+          </>
         ) : (
-          <button type="button" className="btn" disabled={!dispatched} onClick={() => dispatch({ type: 'clear' })}>
-            Clear call (F12)
-          </button>
+          <>
+            <button type="button" className="btn" disabled={!dispatched} onClick={() => dispatch({ type: 'clear' })}>
+              Clear call (F12)
+            </button>
+            {!dispatched ? (
+              <button type="button" className="btn" onClick={() => dispatch({ type: 'dismiss' })}>
+                Close without units
+              </button>
+            ) : null}
+          </>
         )}
       </div>
     </form>

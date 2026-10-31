@@ -12,6 +12,7 @@ export interface Pick {
 export interface Brief {
   name: string;
   mood: string;
+  behavior?: string;
   facts: Record<Exclude<FactKey, 'location'>, string>;
 }
 
@@ -19,7 +20,7 @@ interface Template {
   id: string;
   places: number[];
   callers: { name: string; mood: string }[];
-  variants: ({ opening: string } & Brief['facts'])[];
+  variants: ({ opening: string; behavior?: string } & Brief['facts'])[];
 }
 
 const templates = file.templates as Template[];
@@ -35,5 +36,5 @@ export function briefFor(id: string, pick: Pick): Brief | null {
   const variant = template.variants[pick.variant];
   if (!caller || !variant || template.places[pick.place] === undefined) return null;
   const { nature, weapons, injuries, suspect, safety } = variant;
-  return { name: caller.name, mood: caller.mood, facts: { nature, weapons, injuries, suspect, safety } };
+  return { name: caller.name, mood: caller.mood, behavior: variant.behavior, facts: { nature, weapons, injuries, suspect, safety } };
 }

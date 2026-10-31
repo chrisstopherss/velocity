@@ -146,6 +146,46 @@ describe('scenario pack', () => {
   });
 });
 
+describe('call variants', () => {
+  const prank = () => {
+    const t = scenarioFile.templates.find((x) => x.id === 'shots-fired')!;
+    return t.variants.findIndex((v) => v.label === 'Prank caller');
+  };
+
+  it('tells the model when the call is not real', () => {
+    const messages = buildMessages({ ...valid, pick: { caller: 0, variant: prank(), place: 0 }, history: [] });
+    expect(messages[0].content).toContain('prank caller');
+    expect(messages[0].content).toContain('none of this is real');
+  });
+
+  it('does not add a special situation to an ordinary call', () => {
+    const messages = buildMessages({ ...valid, history: [] });
+    expect(messages[0].content).not.toContain('Special situation');
+  });
+
+  it('keeps the vague location of a prank out of the filter', () => {
+    expect(unsafe('I am downtown somewhere, why do you need that')).toBe(false);
+  });
+
+  it('has a behaviour for every variant that is not a real call', () => {
+    for (const t of scenarioFile.templates) {
+      for (const v of t.variants as { label: string; minUnits: number; behavior?: string }[]) {
+        if (v.minUnits === 0) expect(v.behavior, `${t.id} ${v.label}`).toBeTruthy();
+      }
+    }
+  });
+
+  it('accepts the vague prank location on the wire', async () => {
+    const f = fake('{"say":"haha","told":[]}');
+    const res = await post(await appWith(f.complete), {
+      ...valid,
+      pick: { caller: 0, variant: prank(), place: 0 },
+      location: 'I am downtown somewhere, why do you need that',
+    });
+    expect(res.statusCode).toBe(200);
+  });
+});
+
 describe('prompt', () => {
   it('keeps the request small and thinking off', () => {
     const messages = buildMessages({ ...valid, history: [{ from: 'you', text: 'Where are you?' }] });
@@ -213,10 +253,10 @@ describe('POST /api/caller', () => {
   it('uses the chosen caller and variant in the prompt', async () => {
     const f = fake('{"say":"ok","told":[]}');
     const app = await appWith(f.complete);
-    await post(app, { ...valid, scenarioId: 'robbery', pick: { caller: 1, variant: 2, place: 3 } });
+    await post(app, { ...valid, scenarioId: 'robbery', pick: { caller: 1, variant: 1, place: 3 } });
     const system = (f.calls[0].messages as { content: string }[])[0].content;
     expect(system).toContain('Raj P.');
-    expect(system).toContain('silver revolver');
+    expect(system).toContain('under his jacket');
   });
 
   it('deflects unsafe and injected messages for free', async () => {

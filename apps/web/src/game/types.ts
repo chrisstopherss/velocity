@@ -17,7 +17,9 @@ export type IncidentTypeId =
   | 'vehicle_theft'
   | 'trespass'
   | 'suspicious_person'
-  | 'disabled_vehicle';
+  | 'disabled_vehicle'
+  | 'theft'
+  | 'false_report';
 
 export interface Postal {
   id: number;
@@ -35,6 +37,8 @@ export interface ScenarioPick {
 export interface Scenario {
   id: string;
   pick: ScenarioPick;
+  label: string;
+  locationOverride?: string;
   title: string;
   caller: string;
   ringAfter: number;
@@ -107,6 +111,7 @@ export interface ScoreLine {
 
 export interface Score {
   total: number;
+  reveal: string;
   lines: ScoreLine[];
 }
 

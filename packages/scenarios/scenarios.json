@@ -1,22 +1,48 @@
 {
-  "version": 1,
+  "version": 2,
   "templates": [
     {
       "id": "shots-fired",
       "title": "Shots fired",
       "type": "shots_fired",
-      "priority": 1,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 2,
-      "ringAfter": [3, 7],
-      "places": [322, 229, 315, 404, 1004, 802, 311, 1102],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        3,
+        7
+      ],
+      "places": [
+        322,
+        229,
+        315,
+        404,
+        1004,
+        802,
+        311,
+        1102
+      ],
       "callers": [
-        { "name": "Jordan M.", "mood": "scared and whispering, hiding indoors" },
-        { "name": "Marcus T.", "mood": "shaky and out of breath, just ran inside" },
-        { "name": "Priya S.", "mood": "tense but trying to stay calm" }
+        {
+          "name": "Jordan M.",
+          "mood": "scared and whispering, hiding indoors"
+        },
+        {
+          "name": "Marcus T.",
+          "mood": "shaky and out of breath, just ran inside"
+        },
+        {
+          "name": "Priya S.",
+          "mood": "tense but trying to stay calm"
+        }
       ],
       "variants": [
         {
+          "label": "Shots heard, someone running",
+          "priority": 1,
+          "minUnits": 2,
           "opening": "Please help, I just heard gunshots right outside!",
           "nature": "Three shots, really close. Then I heard somebody running.",
           "weapons": "I did not see a gun, but it sounded like a handgun.",
@@ -25,20 +51,52 @@
           "safety": "I am hiding inside with the door locked."
         },
         {
-          "opening": "Shots! I heard like five shots just now, really close to me!",
-          "nature": "A bunch of pops in a row, then a car sped off.",
-          "weapons": "I did not see a weapon, I only heard it.",
-          "injuries": "Nobody is down that I can see, but I cannot see the whole street.",
-          "suspect": "It was a dark car, maybe black or navy, I did not get the plate.",
-          "safety": "I am inside, away from the windows."
+          "label": "Active shooter",
+          "priority": 1,
+          "minUnits": 5,
+          "opening": "There is a shooter in the building, people are screaming and running out!",
+          "nature": "A man is walking through the building firing a rifle, I heard maybe ten shots.",
+          "weapons": "A rifle, a long gun, he is carrying it in both hands.",
+          "injuries": "I saw at least two people on the floor, I do not know how bad it is.",
+          "suspect": "Man in a black jacket and a tactical vest, walking toward the back.",
+          "safety": "I am hiding in a storage room with a few other people, the door is locked."
         },
         {
-          "opening": "There's somebody shooting out here, I can see a guy with a gun!",
+          "label": "Man firing a pistol",
+          "priority": 1,
+          "minUnits": 2,
+          "opening": "There is somebody shooting out here, I can see a guy with a gun!",
           "nature": "Two men were yelling at each other and one pulled out a pistol and fired in the air.",
           "weapons": "Yes, a black handgun, the taller guy has it.",
           "injuries": "Nobody is hit as far as I can tell.",
           "suspect": "Tall guy, red jacket, jeans. The other one is shorter with a grey beanie.",
           "safety": "I am behind my car, they are about thirty feet away."
+        },
+        {
+          "label": "Fireworks or gunshots",
+          "priority": 3,
+          "minUnits": 1,
+          "behavior": "You are not sure what you heard, it might have been fireworks. You saw nothing and nobody is hurt. Do not claim to have seen anything.",
+          "opening": "I heard some loud bangs a minute ago, it might have been fireworks, but it might have been gunshots.",
+          "nature": "A few loud cracks in a row from somewhere down the block, then nothing. People were setting off fireworks earlier.",
+          "weapons": "I did not see anyone with anything.",
+          "injuries": "No one is hurt that I know of.",
+          "suspect": "I did not see anybody.",
+          "safety": "I am at home and I feel fine, I just wanted someone to check."
+        },
+        {
+          "label": "Prank caller",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "location": "I am downtown somewhere, why do you need that",
+          "behavior": "You are a prank caller and none of this is real. Laugh now and then, stay vague, contradict yourself when pressed for details, and admit it was a prank if the dispatcher firmly says false reports are a crime.",
+          "opening": "Uh, yeah, there is like a gunman, like a super serious gunman out here, haha.",
+          "nature": "Um, people are getting shot everywhere, it is crazy, it is like a movie.",
+          "weapons": "A gun. A big gun. Maybe three guns.",
+          "injuries": "Everybody. I do not know. Lots of people.",
+          "suspect": "A guy. He is wearing a mask, or maybe a hat, hold on.",
+          "safety": "Yeah I am fine, I am just sitting here."
         }
       ]
     },
@@ -46,18 +104,43 @@
       "id": "domestic-dispute",
       "title": "Domestic disturbance",
       "type": "domestic",
-      "priority": 2,
-      "agencies": ["PD", "SO"],
-      "minUnits": 2,
-      "ringAfter": [4, 8],
-      "places": [405, 407, 409, 411, 806, 1003, 1103, 1105],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        4,
+        8
+      ],
+      "places": [
+        405,
+        407,
+        409,
+        411,
+        806,
+        1003,
+        1103,
+        1105
+      ],
       "callers": [
-        { "name": "Amara K.", "mood": "worried and a little embarrassed to be calling about neighbors" },
-        { "name": "Dennis R.", "mood": "annoyed, has heard this before" },
-        { "name": "Lucia V.", "mood": "anxious and speaking quietly" }
+        {
+          "name": "Amara K.",
+          "mood": "worried and a little embarrassed to be calling about neighbors"
+        },
+        {
+          "name": "Dennis R.",
+          "mood": "annoyed, has heard this before"
+        },
+        {
+          "name": "Lucia V.",
+          "mood": "anxious and speaking quietly"
+        }
       ],
       "variants": [
         {
+          "label": "Loud argument, something broke",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "My neighbors are screaming at each other again and it sounds bad.",
           "nature": "Yelling and things being thrown. I heard something break.",
           "weapons": "I have not seen any weapons.",
@@ -66,6 +149,20 @@
           "safety": "I am inside my house, I am fine."
         },
         {
+          "label": "Knife in a domestic fight",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "The man next door is screaming and I just heard a woman yell that he has a knife!",
+          "nature": "A man and a woman are fighting, she yelled that he had a knife.",
+          "weapons": "She said knife, I have not seen it myself.",
+          "injuries": "I heard her scream and then crying, I am not sure she is hurt.",
+          "suspect": "The man is big, grey T shirt, he is shouting her name.",
+          "safety": "I am in my apartment with the door locked."
+        },
+        {
+          "label": "Physical fight, heard a thud",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "I need someone here, the people next door are fighting and I think it got physical.",
           "nature": "A man is shouting and I heard a loud thud against the wall.",
           "weapons": "I do not know, I cannot see inside.",
@@ -74,12 +171,28 @@
           "safety": "I am in my kitchen, they cannot see me."
         },
         {
+          "label": "Man pounding on a door",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "Somebody is banging on a door and yelling next to my apartment, he will not stop.",
           "nature": "A man keeps pounding on the door and shouting that she has to let him in.",
           "weapons": "I have not seen anything in his hands.",
           "injuries": "Nobody seems hurt, she is just not opening the door.",
           "suspect": "Man in a blue hoodie, he sounds drunk.",
           "safety": "I locked my door, I am not going out there."
+        },
+        {
+          "label": "It was a TV",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "If the dispatcher asks you to go listen at the wall or check again, you realise it is a movie playing loudly in the neighbor's place and you say sorry and that nobody needs to come.",
+          "opening": "I think my neighbors are fighting, I can hear a woman screaming and a man yelling.",
+          "nature": "It is really loud, lots of shouting and glass breaking, it has been going on for a few minutes.",
+          "weapons": "I do not know, I cannot see anything.",
+          "injuries": "I do not know.",
+          "suspect": "I do not know who it is, it is coming through the wall.",
+          "safety": "I am in my living room, I am fine."
         }
       ]
     },
@@ -87,18 +200,44 @@
       "id": "suspicious-vehicle",
       "title": "Suspicious vehicle",
       "type": "suspicious_vehicle",
-      "priority": 4,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 1,
-      "ringAfter": [4, 9],
-      "places": [1008, 701, 1006, 602, 807, 1104, 205, 305],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        4,
+        9
+      ],
+      "places": [
+        1008,
+        701,
+        1006,
+        602,
+        807,
+        1104,
+        205,
+        305
+      ],
       "callers": [
-        { "name": "Walt B.", "mood": "older, calm, talkative, a bit suspicious" },
-        { "name": "Gina H.", "mood": "uneasy but polite" },
-        { "name": "Omar L.", "mood": "matter of fact, wants it checked out" }
+        {
+          "name": "Walt B.",
+          "mood": "older, calm, talkative, a bit suspicious"
+        },
+        {
+          "name": "Gina H.",
+          "mood": "uneasy but polite"
+        },
+        {
+          "name": "Omar L.",
+          "mood": "matter of fact, wants it checked out"
+        }
       ],
       "variants": [
         {
+          "label": "Van parked all afternoon",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "There is a van that has been parked outside my house all afternoon.",
           "nature": "A white van, nobody gets in or out. Somebody keeps looking at my house.",
           "weapons": "No weapons that I can see.",
@@ -107,6 +246,20 @@
           "safety": "I feel safe, just uneasy."
         },
         {
+          "label": "Man with a rifle in a car",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "There is a man in a parked car at the edge of the lot and I can see a rifle across his lap.",
+          "nature": "A man is sitting in a car with a long gun on his lap. He keeps looking toward the entrance.",
+          "weapons": "A rifle or a shotgun, it has a long barrel.",
+          "injuries": "No one is hurt.",
+          "suspect": "White male, forties, camouflage jacket, in a green sedan.",
+          "safety": "I am inside the store, behind the glass."
+        },
+        {
+          "label": "Idling car, lights off",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "A car has been idling in front of my place for over an hour with the lights off.",
           "nature": "A silver sedan, engine running, one person sitting in it. They keep checking their phone.",
           "weapons": "I cannot tell, the windows are dark.",
@@ -115,12 +268,28 @@
           "safety": "I am inside and the doors are locked."
         },
         {
+          "label": "Truck blocking driveways",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "There is a truck I have never seen here, parked across two driveways.",
           "nature": "A black pickup with no plates on the front. Two guys got out, looked around, then got back in.",
           "weapons": "I did not see anything.",
           "injuries": "No one is hurt.",
           "suspect": "Both men were in dark clothes, one wearing a yellow vest.",
           "safety": "I am fine, I am watching from the window."
+        },
+        {
+          "label": "A delivery driver",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "If the dispatcher asks you to look closer, you notice the company vest and logo on the car and realise it is a delivery driver waiting for a customer. Say sorry and that nobody needs to come.",
+          "opening": "There is a car outside I do not recognize with its hazards on.",
+          "nature": "A small hatchback with its hazards on and a person inside.",
+          "weapons": "No weapons.",
+          "injuries": "No one is hurt.",
+          "suspect": "A woman, I cannot tell much, she is on the phone.",
+          "safety": "I am fine."
         }
       ]
     },
@@ -128,18 +297,44 @@
       "id": "collision",
       "title": "Traffic collision",
       "type": "traffic_collision",
-      "priority": 2,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 2,
-      "ringAfter": [3, 6],
-      "places": [209, 212, 218, 303, 301, 308, 226, 504],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        3,
+        6
+      ],
+      "places": [
+        209,
+        212,
+        218,
+        303,
+        301,
+        308,
+        226,
+        504
+      ],
       "callers": [
-        { "name": "Dana R.", "mood": "shaken and talking fast" },
-        { "name": "Chris W.", "mood": "stunned, slightly out of breath" },
-        { "name": "Nadia F.", "mood": "calm but worried about the drivers" }
+        {
+          "name": "Dana R.",
+          "mood": "shaken and talking fast"
+        },
+        {
+          "name": "Chris W.",
+          "mood": "stunned, slightly out of breath"
+        },
+        {
+          "name": "Nadia F.",
+          "mood": "calm but worried about the drivers"
+        }
       ],
       "variants": [
         {
+          "label": "Head on, one rolled over",
+          "priority": 2,
+          "minUnits": 3,
           "opening": "There has been a crash at the intersection, one car is on its side!",
           "nature": "Two cars hit head on. One flipped over, the other is smoking.",
           "weapons": "No weapons, it is a crash.",
@@ -148,39 +343,94 @@
           "safety": "I am on the sidewalk, traffic is backing up."
         },
         {
-          "opening": "I just saw a really bad accident, a car ran a red light and hit another one!",
-          "nature": "A white SUV ran the light and slammed into a blue hatchback.",
-          "weapons": "No, it is just a crash.",
-          "injuries": "The hatchback driver is holding her neck, the SUV driver got out and is walking around.",
-          "suspect": "No suspect, the SUV driver is still here.",
-          "safety": "I pulled over a safe distance away."
+          "label": "Multi car pile up",
+          "priority": 1,
+          "minUnits": 4,
+          "opening": "There is a huge pile up in the road, at least four cars and one is smoking!",
+          "nature": "Four or five cars collided, one of them is smoking and people are trapped.",
+          "weapons": "No weapons.",
+          "injuries": "A woman is stuck in her car and says her legs are pinned, a few others are walking around.",
+          "suspect": "No suspect, a delivery truck started it and the driver is still here.",
+          "safety": "I am a safe distance away on the sidewalk."
         },
         {
+          "label": "Single car into a pole",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "A car just hit a pole and it is blocking the road!",
           "nature": "A yellow coupe went off the road into a light pole. The front is crushed.",
           "weapons": "No weapons.",
           "injuries": "The driver is awake but bleeding from the forehead, he says he is dizzy.",
           "suspect": "He was alone in the car.",
           "safety": "I am standing next to him, nothing else is coming."
+        },
+        {
+          "label": "Minor fender bender",
+          "priority": 3,
+          "minUnits": 1,
+          "opening": "I just got rear ended at a light, nobody is hurt but we need a report.",
+          "nature": "A small bump, my bumper is cracked and his headlight is broken.",
+          "weapons": "No weapons.",
+          "injuries": "Nobody is hurt, we are both standing outside our cars.",
+          "suspect": "The other driver is cooperating, he is waiting here.",
+          "safety": "We moved both cars to the side of the road."
+        },
+        {
+          "label": "Already exchanged information",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "You were in a tiny no injury fender bender, you already swapped insurance details and moved off the road. You only want to know whether a report is needed, and you accept that no officer has to come.",
+          "opening": "I was in a small fender bender a few minutes ago, we already swapped insurance and moved off the road.",
+          "nature": "We tapped bumpers in a parking lot, there is a scuff on each car and nothing else.",
+          "weapons": "No weapons.",
+          "injuries": "Nobody is hurt.",
+          "suspect": "The other driver was nice, we both have each other details.",
+          "safety": "We are both fine, our cars are parked."
         }
       ]
     },
     {
       "id": "burglary",
-      "title": "Burglary in progress",
+      "title": "Burglary",
       "type": "burglary",
-      "priority": 2,
-      "agencies": ["PD", "SO"],
-      "minUnits": 2,
-      "ringAfter": [4, 8],
-      "places": [408, 410, 702, 805, 1107, 1007, 403, 606],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        4,
+        8
+      ],
+      "places": [
+        408,
+        410,
+        702,
+        805,
+        1107,
+        1007,
+        403,
+        606
+      ],
       "callers": [
-        { "name": "Helen P.", "mood": "whispering, afraid to be heard" },
-        { "name": "Tony G.", "mood": "angry and loud, wants someone there now" },
-        { "name": "Mei C.", "mood": "nervous, talking quickly" }
+        {
+          "name": "Helen P.",
+          "mood": "whispering, afraid to be heard"
+        },
+        {
+          "name": "Tony G.",
+          "mood": "angry and loud, wants someone there now"
+        },
+        {
+          "name": "Mei C.",
+          "mood": "nervous, talking quickly"
+        }
       ],
       "variants": [
         {
+          "label": "Neighbor's window",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "Somebody is breaking into my neighbor's house, I can see them through the window.",
           "nature": "A man climbed through the back window. The family is on vacation.",
           "weapons": "I could not see anything in his hands.",
@@ -189,6 +439,9 @@
           "safety": "I am at home with the lights off."
         },
         {
+          "label": "Intruder inside, caller at home",
+          "priority": 1,
+          "minUnits": 3,
           "opening": "I think someone is inside my house right now, I heard glass break downstairs.",
           "nature": "The back door glass shattered a minute ago and I hear footsteps in the kitchen.",
           "weapons": "I do not know, I have not seen anyone.",
@@ -197,12 +450,39 @@
           "safety": "I am in my bedroom with the door locked."
         },
         {
+          "label": "Shed theft",
+          "priority": 3,
+          "minUnits": 2,
           "opening": "My car alarm woke me up and now I see two guys going through the shed.",
           "nature": "Two men with a flashlight are carrying tools out of my shed to a van.",
           "weapons": "One has a crowbar.",
           "injuries": "Nobody is hurt.",
           "suspect": "Both in dark hoodies, a white van with a ladder on top.",
           "safety": "I am inside, I am watching from an upstairs window."
+        },
+        {
+          "label": "Found after the fact",
+          "priority": 3,
+          "minUnits": 1,
+          "opening": "I came home and my back door was kicked in, I think I was burglarized while I was out.",
+          "nature": "The back door is splintered and my TV and laptop are gone.",
+          "weapons": "I have not seen anyone, there is no one here.",
+          "injuries": "No one is hurt.",
+          "suspect": "I do not know who did it.",
+          "safety": "I am standing in my driveway, I did not go inside."
+        },
+        {
+          "label": "The house sitter",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "If the dispatcher asks whether you know the people next door or whether anyone was expected, you remember the neighbors said a house sitter was coming. Say sorry and that nobody needs to come.",
+          "opening": "There is a person walking around inside my neighbor's house with a flashlight.",
+          "nature": "A person went in the front door with a key and turned on a flashlight.",
+          "weapons": "I did not see anything in their hands.",
+          "injuries": "No one is hurt.",
+          "suspect": "A woman with a backpack, she used a key.",
+          "safety": "I am fine, I am in my yard."
         }
       ]
     },
@@ -210,18 +490,43 @@
       "id": "assault",
       "title": "Assault",
       "type": "assault",
-      "priority": 2,
-      "agencies": ["PD", "SO"],
-      "minUnits": 2,
-      "ringAfter": [3, 7],
-      "places": [211, 224, 307, 319, 204, 216, 313, 320],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        3,
+        7
+      ],
+      "places": [
+        211,
+        224,
+        307,
+        319,
+        204,
+        216,
+        313,
+        320
+      ],
       "callers": [
-        { "name": "Kevin D.", "mood": "excited and a bit rattled" },
-        { "name": "Sofia M.", "mood": "alarmed, speaking loudly over background noise" },
-        { "name": "Andre J.", "mood": "calm, an employee used to dealing with trouble" }
+        {
+          "name": "Kevin D.",
+          "mood": "excited and a bit rattled"
+        },
+        {
+          "name": "Sofia M.",
+          "mood": "alarmed, speaking loudly over background noise"
+        },
+        {
+          "name": "Andre J.",
+          "mood": "calm, an employee used to dealing with trouble"
+        }
       ],
       "variants": [
         {
+          "label": "Punches in a parking lot",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "Two guys are fighting in the parking lot, one of them is not getting up!",
           "nature": "One man punched another a few times, the other is on the ground.",
           "weapons": "I did not see any weapons.",
@@ -230,6 +535,20 @@
           "safety": "I am inside the store looking out."
         },
         {
+          "label": "Man with a knife threatening people",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "A man is waving a knife at people outside the gas station!",
+          "nature": "He is yelling and swinging a knife at anyone who comes close.",
+          "weapons": "A large kitchen knife.",
+          "injuries": "One man has a cut on his arm but he is up and walking.",
+          "suspect": "White male, tall, torn grey jacket, he looks high or drunk.",
+          "safety": "I am inside the store with the door locked."
+        },
+        {
+          "label": "Bottle strike outside a diner",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "Somebody just got hit with a bottle outside the diner!",
           "nature": "An argument turned into a fight, one man swung a bottle at another's head.",
           "weapons": "A glass bottle, I think he dropped it.",
@@ -238,12 +557,28 @@
           "safety": "I am behind the counter, the door is closed."
         },
         {
-          "opening": "A man just shoved a woman to the ground and grabbed her bag!",
-          "nature": "He pushed her down, took her purse and ran toward the alley.",
-          "weapons": "I did not see a weapon.",
-          "injuries": "She is up on her knees, scraped hands, she says she is okay but shaking.",
-          "suspect": "Man in a black hoodie and white sneakers, running east.",
-          "safety": "I am with her, he is gone."
+          "label": "Loud argument, nothing physical",
+          "priority": 3,
+          "minUnits": 1,
+          "opening": "Two men are screaming at each other in the lot and it looks like it might get physical.",
+          "nature": "They are chest to chest shouting about a parking spot, no one has thrown a punch yet.",
+          "weapons": "I did not see any.",
+          "injuries": "No one is hurt.",
+          "suspect": "One is in a red polo, the other in a black cap.",
+          "safety": "I am watching from my car, I locked it."
+        },
+        {
+          "label": "Friends wrestling",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "You thought a fight had started but if the dispatcher asks you to look closer you see the two men are friends wrestling and laughing, and one helps the other up. Say sorry and that nobody needs to come.",
+          "opening": "There are two guys fighting in the street outside my window.",
+          "nature": "They are grabbing each other and rolling around on the grass, there is a lot of shouting.",
+          "weapons": "I do not see any weapons.",
+          "injuries": "I do not see anyone hurt.",
+          "suspect": "One is in a blue jersey and one is in a grey hoodie.",
+          "safety": "I am inside, I am fine."
         }
       ]
     },
@@ -251,18 +586,43 @@
       "id": "welfare-check",
       "title": "Welfare check",
       "type": "welfare_check",
-      "priority": 3,
-      "agencies": ["PD", "SO"],
-      "minUnits": 1,
-      "ringAfter": [5, 10],
-      "places": [407, 410, 704, 1009, 804, 1106, 502, 228],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        5,
+        10
+      ],
+      "places": [
+        407,
+        410,
+        704,
+        1009,
+        804,
+        1106,
+        502,
+        228
+      ],
       "callers": [
-        { "name": "Rosa N.", "mood": "concerned neighbor, polite" },
-        { "name": "Bill A.", "mood": "gruff but clearly worried" },
-        { "name": "Tess O.", "mood": "worried and a bit tearful" }
+        {
+          "name": "Rosa N.",
+          "mood": "concerned neighbor, polite"
+        },
+        {
+          "name": "Bill A.",
+          "mood": "gruff but clearly worried"
+        },
+        {
+          "name": "Tess O.",
+          "mood": "worried and a bit tearful"
+        }
       ],
       "variants": [
         {
+          "label": "Neighbor not seen for three days",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "I am worried about my elderly neighbor, I have not seen him in three days.",
           "nature": "His newspapers are piling up and his curtains have not moved. He always waves in the morning.",
           "weapons": "No weapons, he is a quiet old man.",
@@ -271,6 +631,20 @@
           "safety": "I am fine, I am standing outside his door."
         },
         {
+          "label": "Groaning heard inside",
+          "priority": 1,
+          "minUnits": 2,
+          "opening": "I can hear someone groaning inside my neighbor's apartment and the door is locked, I think he needs help.",
+          "nature": "A faint groaning and then a thump. I knocked and shouted and he does not answer.",
+          "weapons": "No weapons that I know of.",
+          "injuries": "Someone sounds hurt or sick and I cannot get in.",
+          "suspect": "No one else, he lives alone, his name is Mr. Hughes.",
+          "safety": "I am outside his door, I am fine."
+        },
+        {
+          "label": "Diabetic brother not answering",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "My brother is not answering his phone or his door and he is diabetic.",
           "nature": "I have been calling since this morning and his truck is in the driveway.",
           "weapons": "No, nothing like that.",
@@ -279,39 +653,94 @@
           "safety": "I am safe, I have a spare key but I am afraid to go in alone."
         },
         {
+          "label": "Door open, TV on",
+          "priority": 2,
+          "minUnits": 1,
           "opening": "There is a light on and a TV blaring at my neighbor's, but the door is wide open and nobody answers.",
           "nature": "The front door has been open since last night. Her car is here.",
           "weapons": "I did not see anything.",
           "injuries": "I do not know, I did not go inside.",
           "suspect": "I did not see anyone else around.",
           "safety": "I am on the porch, I feel fine."
+        },
+        {
+          "label": "She is fine, never mind",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "Partway through the call you see your neighbor pull into her driveway, safe and well. Say sorry and that nobody needs to come.",
+          "opening": "I wanted to check on my neighbor, I have not seen her today and her car is gone.",
+          "nature": "Her curtains are closed and nobody answers, but she usually goes to the market on Saturdays.",
+          "weapons": "No weapons.",
+          "injuries": "Not that I know of.",
+          "suspect": "No one.",
+          "safety": "I am fine."
         }
       ]
     },
     {
       "id": "alarm",
-      "title": "Business alarm",
+      "title": "Alarm",
       "type": "alarm",
-      "priority": 3,
-      "agencies": ["PD", "SO"],
-      "minUnits": 1,
-      "ringAfter": [4, 9],
-      "places": [309, 310, 315, 316, 323, 325, 217, 225],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        4,
+        9
+      ],
+      "places": [
+        309,
+        310,
+        315,
+        316,
+        323,
+        325,
+        217,
+        225
+      ],
       "callers": [
-        { "name": "Alarm company", "mood": "a professional alarm monitoring operator, brisk and formal" },
-        { "name": "Pete S.", "mood": "a store owner woken by a phone call, groggy" },
-        { "name": "Lena Q.", "mood": "an employee passing by, curious" }
+        {
+          "name": "Alarm company",
+          "mood": "a professional alarm monitoring operator, brisk and formal"
+        },
+        {
+          "name": "Pete S.",
+          "mood": "a store owner woken by a phone call, groggy"
+        },
+        {
+          "name": "Lena Q.",
+          "mood": "an employee passing by, curious"
+        }
       ],
       "variants": [
         {
+          "label": "Door and motion sensors",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "I am calling about a burglar alarm that tripped at a business.",
           "nature": "The front door sensor and the motion sensor in the stockroom both went off.",
           "weapons": "Unknown, nobody is on site that we can verify.",
           "injuries": "None known.",
           "suspect": "Nothing is known, we have no camera feed.",
-          "safety": "I am at the monitoring center, no one is in danger."
+          "safety": "No one is in danger that we know of."
         },
         {
+          "label": "Glass broken, alarm blaring",
+          "priority": 2,
+          "minUnits": 2,
+          "opening": "I was walking by and the alarm on this building is blaring, and the front glass looks broken.",
+          "nature": "The glass on the front door is smashed and the alarm keeps going.",
+          "weapons": "I did not see anyone or anything.",
+          "injuries": "I did not see anybody hurt.",
+          "suspect": "Nobody around, I think they are gone.",
+          "safety": "I am across the street, nobody is near me."
+        },
+        {
+          "label": "Back door opened at night",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "The alarm company called me, the alarm at my shop is going off and I am about an hour away.",
           "nature": "They said the back door opened at three in the morning.",
           "weapons": "I do not know.",
@@ -320,12 +749,28 @@
           "safety": "I am at home, I am fine."
         },
         {
-          "opening": "I was walking by and the alarm on this building is blaring, and the front glass looks broken.",
-          "nature": "The glass on the front door is smashed and the alarm keeps going.",
-          "weapons": "I did not see anyone or anything.",
-          "injuries": "I did not see anybody hurt.",
-          "suspect": "Nobody around, I think they are gone.",
-          "safety": "I am across the street, nobody is near me."
+          "label": "Voices heard on the alarm audio",
+          "priority": 2,
+          "minUnits": 2,
+          "opening": "I am calling from an alarm monitoring company, we can hear voices inside a closed business.",
+          "nature": "Our operator can hear two voices and what sounds like a door being forced.",
+          "weapons": "Unknown.",
+          "injuries": "None known.",
+          "suspect": "Two or more people, no description.",
+          "safety": "No one from our company is on site."
+        },
+        {
+          "label": "Employee set it off",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "You are the employee who set the alarm off by accident. You are sorry and ask the dispatcher to cancel any response. You can give the store's safe word if asked, it is bluebird.",
+          "opening": "I am a store employee and I think I tripped our alarm by mistake.",
+          "nature": "I opened the back door without turning off the alarm and now it is going off.",
+          "weapons": "No, none.",
+          "injuries": "No one is hurt.",
+          "suspect": "No one, it was me.",
+          "safety": "I am safe, I am standing at the back door."
         }
       ]
     },
@@ -333,18 +778,44 @@
       "id": "robbery",
       "title": "Robbery",
       "type": "robbery",
-      "priority": 1,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 3,
-      "ringAfter": [3, 6],
-      "places": [212, 316, 324, 217, 210, 307, 218, 321],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        3,
+        6
+      ],
+      "places": [
+        212,
+        316,
+        324,
+        217,
+        210,
+        307,
+        218,
+        321
+      ],
       "callers": [
-        { "name": "Tanya B.", "mood": "trembling, whispering from behind a counter" },
-        { "name": "Raj P.", "mood": "shocked, speaking in short bursts" },
-        { "name": "Colin E.", "mood": "calm on the surface, clearly shaken" }
+        {
+          "name": "Tanya B.",
+          "mood": "trembling, whispering from behind a counter"
+        },
+        {
+          "name": "Raj P.",
+          "mood": "shocked, speaking in short bursts"
+        },
+        {
+          "name": "Colin E.",
+          "mood": "calm on the surface, clearly shaken"
+        }
       ],
       "variants": [
         {
+          "label": "Gunman just left",
+          "priority": 1,
+          "minUnits": 3,
           "opening": "We were just robbed, a man came in with a gun and took the money!",
           "nature": "A man came in, pointed a gun at me and made me empty the register. He left about a minute ago.",
           "weapons": "Yes, a black handgun.",
@@ -353,6 +824,9 @@
           "safety": "I am safe, I locked the door behind him."
         },
         {
+          "label": "Robbery in progress",
+          "priority": 1,
+          "minUnits": 4,
           "opening": "There is a robbery happening right now, he is still in the store!",
           "nature": "A man is at the counter demanding cash and telling everyone to get on the floor.",
           "weapons": "He has something under his jacket, he said he has a gun.",
@@ -361,12 +835,40 @@
           "safety": "I am on the floor behind the shelves, I am whispering."
         },
         {
-          "opening": "Two guys just robbed the place and drove off in a car, please send someone!",
-          "nature": "Two men came in with masks, one held a gun on us while the other grabbed cash and cigarettes.",
-          "weapons": "One had a silver revolver.",
-          "injuries": "My coworker got shoved into a shelf, he says he is fine.",
-          "suspect": "Both in black, one tall, one short. They left in a dark green sedan heading north.",
-          "safety": "They are gone, we are inside with the door locked."
+          "label": "Shoplifter held by staff",
+          "priority": 3,
+          "minUnits": 1,
+          "type": "theft",
+          "opening": "We caught a man stealing from the store and my manager is holding him at the door, he is cooperating.",
+          "nature": "He put merchandise in his jacket and tried to leave, our manager stopped him at the door.",
+          "weapons": "No weapons, we checked his bag.",
+          "injuries": "No one is hurt.",
+          "suspect": "Man in a blue jacket, he is sitting by the door waiting.",
+          "safety": "We are fine, he is calm."
+        },
+        {
+          "label": "Note demanding cash, no weapon seen",
+          "priority": 2,
+          "minUnits": 2,
+          "opening": "A man handed me a note demanding all the cash and then he left with it.",
+          "nature": "He slid a note over the counter, I gave him about two hundred dollars, he walked out calmly.",
+          "weapons": "I did not see a weapon, he kept one hand in his pocket.",
+          "injuries": "No, nobody is hurt.",
+          "suspect": "Man in his thirties, grey sweatshirt, black beanie, he walked toward the parking lot.",
+          "safety": "I am okay, I locked the door."
+        },
+        {
+          "label": "A customer joking around",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "A customer in a costume mask was joking around. You panicked and called, but if the dispatcher asks calm questions you realise nobody was threatened and you admit it quickly and apologise.",
+          "opening": "I think a man just tried to rob us, he walked in with a mask on and said give me everything.",
+          "nature": "He wore a mask and said to give him everything, then started laughing and took a selfie with my coworker.",
+          "weapons": "I did not see any weapon.",
+          "injuries": "No one is hurt.",
+          "suspect": "A guy in a costume mask, he is still here laughing.",
+          "safety": "I am fine, he is just standing by the door."
         }
       ]
     },
@@ -374,18 +876,44 @@
       "id": "reckless-driver",
       "title": "Reckless driver",
       "type": "reckless_driver",
-      "priority": 2,
-      "agencies": ["SP", "PD", "SO"],
-      "minUnits": 2,
-      "ringAfter": [3, 7],
-      "places": [504, 907, 1011, 1100, 1210, 303, 212, 9901],
+      "agencies": [
+        "SP",
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        3,
+        7
+      ],
+      "places": [
+        504,
+        907,
+        1011,
+        1100,
+        1210,
+        303,
+        212,
+        9901
+      ],
       "callers": [
-        { "name": "Frank H.", "mood": "annoyed and worried, driving" },
-        { "name": "Aisha K.", "mood": "frightened, hands free on the phone" },
-        { "name": "Greg L.", "mood": "calm, trying to give a clear description" }
+        {
+          "name": "Frank H.",
+          "mood": "annoyed and worried, driving"
+        },
+        {
+          "name": "Aisha K.",
+          "mood": "frightened, hands free on the phone"
+        },
+        {
+          "name": "Greg L.",
+          "mood": "calm, trying to give a clear description"
+        }
       ],
       "variants": [
         {
+          "label": "Drunk driver swerving",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "There is a driver swerving all over the road in front of me, I think he is drunk.",
           "nature": "A red pickup crossing the lines, almost hit the guardrail twice.",
           "weapons": "No weapons that I know of.",
@@ -394,6 +922,9 @@
           "safety": "I am keeping my distance."
         },
         {
+          "label": "Very fast coupe weaving",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "A car just passed me at about a hundred miles an hour and nearly hit three cars!",
           "nature": "A black coupe weaving through traffic way over the limit.",
           "weapons": "None that I saw.",
@@ -402,12 +933,39 @@
           "safety": "I am fine, I slowed down and let him go."
         },
         {
+          "label": "Wrong way driver",
+          "priority": 1,
+          "minUnits": 3,
           "opening": "Somebody is driving the wrong way on the road, headed straight at us!",
           "nature": "A white sedan going the wrong direction in my lane, headlights flashing.",
           "weapons": "No weapons.",
           "injuries": "Nobody is hurt, we pulled onto the shoulder.",
           "suspect": "White sedan, looks like an older model, one person driving.",
           "safety": "I am stopped on the shoulder."
+        },
+        {
+          "label": "Road rage",
+          "priority": 3,
+          "minUnits": 1,
+          "opening": "A guy is tailgating me and cutting people off and he just threw a drink at someone's windshield.",
+          "nature": "A grey SUV riding people's bumpers, honking, passing on the shoulder.",
+          "weapons": "No weapons that I saw.",
+          "injuries": "Nobody is hurt.",
+          "suspect": "Grey SUV, only the driver, I cannot see him well.",
+          "safety": "I let him pass, I am fine."
+        },
+        {
+          "label": "Driver pulled over, fine",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "The driver has already pulled over safely and seems to have just been lost and looking at a phone. Make clear you think it is resolved and nobody needs to come.",
+          "opening": "There was a car weaving across the lane a minute ago, but it just pulled into a gas station.",
+          "nature": "A blue sedan drifting over the lines, then it signaled and parked.",
+          "weapons": "No.",
+          "injuries": "No one is hurt.",
+          "suspect": "An older driver, looks like he was lost, he is on his phone.",
+          "safety": "I am fine, I drove on."
         }
       ]
     },
@@ -415,18 +973,43 @@
       "id": "hit-and-run",
       "title": "Hit and run",
       "type": "hit_and_run",
-      "priority": 3,
-      "agencies": ["PD", "SO"],
-      "minUnits": 1,
-      "ringAfter": [5, 9],
-      "places": [210, 215, 308, 312, 224, 1002, 217, 306],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        5,
+        9
+      ],
+      "places": [
+        210,
+        215,
+        308,
+        312,
+        224,
+        1002,
+        217,
+        306
+      ],
       "callers": [
-        { "name": "Bob T.", "mood": "irritated, just found his car damaged" },
-        { "name": "Elena R.", "mood": "upset but composed" },
-        { "name": "Sam Y.", "mood": "a witness, helpful and curious" }
+        {
+          "name": "Bob T.",
+          "mood": "irritated, just found his car damaged"
+        },
+        {
+          "name": "Elena R.",
+          "mood": "upset but composed"
+        },
+        {
+          "name": "Sam Y.",
+          "mood": "a witness, helpful and curious"
+        }
       ],
       "variants": [
         {
+          "label": "Parked car hit",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "Somebody just hit my parked car and drove away.",
           "nature": "My bumper is smashed and there is paint on it. I heard the crash from inside the shop.",
           "weapons": "No weapons, it is a hit and run.",
@@ -435,6 +1018,9 @@
           "safety": "I am fine, standing next to my car."
         },
         {
+          "label": "Cyclist hit",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "A car hit a cyclist and kept going!",
           "nature": "A blue sedan clipped a bicycle at the intersection and drove off without stopping.",
           "weapons": "No weapons.",
@@ -443,31 +1029,83 @@
           "safety": "I am with the cyclist, traffic is moving around us."
         },
         {
+          "label": "Truck backs into parked car",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "I saw a truck back into a parked car and then take off.",
           "nature": "A white pickup backed into a parked sedan, looked at the damage, then left.",
           "weapons": "None.",
           "injuries": "Nobody was inside.",
           "suspect": "White pickup with a ladder rack, the first letters of the plate were R and K.",
           "safety": "I am fine."
+        },
+        {
+          "label": "Pedestrian struck",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "A car just hit a man in the crosswalk and drove off!",
+          "nature": "A dark SUV hit a man crossing the street and sped away without braking.",
+          "weapons": "No weapons.",
+          "injuries": "The man is on the ground and not getting up, he is awake but in a lot of pain.",
+          "suspect": "Dark SUV, maybe black or navy, I did not see the plate.",
+          "safety": "I am kneeling next to him, traffic stopped for us."
+        },
+        {
+          "label": "A note, no damage",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "You found a note and there is no actual damage to your car. You mostly want it on record. Accept that no response is needed when the dispatcher explains.",
+          "opening": "Someone left a note on my car saying they bumped it, but I cannot find any damage.",
+          "nature": "A note under the wiper says sorry I tapped your car, but there is no dent or scratch.",
+          "weapons": "No.",
+          "injuries": "No one is hurt.",
+          "suspect": "The note has no name, it just says sorry.",
+          "safety": "I am fine."
         }
       ]
     },
     {
       "id": "noise-complaint",
-      "title": "Loud party",
+      "title": "Noise complaint",
       "type": "noise_disturbance",
-      "priority": 4,
-      "agencies": ["PD", "SO"],
-      "minUnits": 1,
-      "ringAfter": [5, 10],
-      "places": [806, 1103, 405, 702, 1105, 409, 602, 808],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        5,
+        10
+      ],
+      "places": [
+        806,
+        1103,
+        405,
+        702,
+        1105,
+        409,
+        602,
+        808
+      ],
       "callers": [
-        { "name": "Marge D.", "mood": "tired and irritated, it is very late" },
-        { "name": "Victor Z.", "mood": "polite but at his limit" },
-        { "name": "Hana W.", "mood": "calm, has tried talking to them already" }
+        {
+          "name": "Marge D.",
+          "mood": "tired and irritated, it is very late"
+        },
+        {
+          "name": "Victor Z.",
+          "mood": "polite but at his limit"
+        },
+        {
+          "name": "Hana W.",
+          "mood": "calm, has tried talking to them already"
+        }
       ],
       "variants": [
         {
+          "label": "Loud party",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "There is a loud party next door and it has been going for hours. I have to work in the morning.",
           "nature": "Loud music and people shouting in the yard, there must be fifty people.",
           "weapons": "No weapons that I know of.",
@@ -476,6 +1114,9 @@
           "safety": "I am safe, just fed up."
         },
         {
+          "label": "Car music",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "Someone is blasting music from a car in front of my building and it will not stop.",
           "nature": "A group of guys are hanging out around a car with the speakers cranked up.",
           "weapons": "I did not see any weapons.",
@@ -484,12 +1125,39 @@
           "safety": "I am in my apartment, I am fine."
         },
         {
+          "label": "Power tools at midnight",
+          "priority": 4,
+          "minUnits": 1,
           "opening": "My neighbor is running some kind of machine at midnight, it sounds like a saw and it will not stop.",
           "nature": "Loud power tools and music from the garage, it has been going two hours.",
           "weapons": "No.",
           "injuries": "No injuries.",
           "suspect": "My neighbor, the man in the yellow house, I asked him to stop and he laughed.",
           "safety": "I am safe inside."
+        },
+        {
+          "label": "Party spilling into the street",
+          "priority": 2,
+          "minUnits": 2,
+          "opening": "The party next door spilled into the street and some guys are shoving each other.",
+          "nature": "A lot of people in the road, shouting, a couple of men pushing and cursing, bottles on the ground.",
+          "weapons": "None that I can see.",
+          "injuries": "No one is hurt yet.",
+          "suspect": "Too many people, a few men in matching red shirts started it.",
+          "safety": "I am inside, my door is locked."
+        },
+        {
+          "label": "Not a police matter",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "Your complaint is only that a neighbor's dog barked for five minutes in the afternoon. You are irritated but will accept being told this is not something that needs officers.",
+          "opening": "My neighbor's dog is barking and I want an officer to come deal with it right now.",
+          "nature": "The dog barked for about five minutes while they were out. It is two in the afternoon.",
+          "weapons": "No weapons.",
+          "injuries": "No one is hurt, the dog is fine.",
+          "suspect": "It is the neighbor in the green house.",
+          "safety": "I am fine, just annoyed."
         }
       ]
     },
@@ -497,18 +1165,44 @@
       "id": "vehicle-theft",
       "title": "Stolen vehicle",
       "type": "vehicle_theft",
-      "priority": 3,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 1,
-      "ringAfter": [5, 9],
-      "places": [309, 316, 215, 225, 305, 321, 218, 207],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        5,
+        9
+      ],
+      "places": [
+        309,
+        316,
+        215,
+        225,
+        305,
+        321,
+        218,
+        207
+      ],
       "callers": [
-        { "name": "Derek F.", "mood": "angry and confused" },
-        { "name": "Yvonne C.", "mood": "upset, near tears" },
-        { "name": "Hal M.", "mood": "calm and methodical, writing things down" }
+        {
+          "name": "Derek F.",
+          "mood": "angry and confused"
+        },
+        {
+          "name": "Yvonne C.",
+          "mood": "upset, near tears"
+        },
+        {
+          "name": "Hal M.",
+          "mood": "calm and methodical, writing things down"
+        }
       ],
       "variants": [
         {
+          "label": "Car gone from the lot",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "My car was stolen, I parked it right here an hour ago and it is gone.",
           "nature": "I parked a black sedan, came back and the spot is empty. There is glass on the ground.",
           "weapons": "No weapons involved.",
@@ -517,6 +1211,9 @@
           "safety": "I am safe, standing in the parking lot."
         },
         {
+          "label": "Truck taken while idling",
+          "priority": 3,
+          "minUnits": 2,
           "opening": "Someone just drove off in my truck, I saw them take it!",
           "nature": "A man jumped into my idling pickup while I ran inside and drove away.",
           "weapons": "I did not see a weapon.",
@@ -525,12 +1222,39 @@
           "safety": "I am fine, I am standing at the door."
         },
         {
+          "label": "Window smashed in progress",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "I think someone is stealing my car right now, I can see them from my window!",
           "nature": "Someone is breaking the window of my car and getting inside.",
           "weapons": "I could not see anything in their hands.",
           "injuries": "I am not hurt, I am upstairs.",
-          "suspect": "One person, grey sweatshirt, thin, looks young adult.",
+          "suspect": "One person, grey sweatshirt, thin, looks like a young adult.",
           "safety": "I am inside my apartment."
+        },
+        {
+          "label": "Carjacking",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "A man just pulled me out of my car and drove off with it, he had a gun!",
+          "nature": "A man pointed a gun at me at the stoplight, made me get out and took my car.",
+          "weapons": "A black handgun.",
+          "injuries": "I fell and scraped my knee, I am fine otherwise.",
+          "suspect": "Man in a black hoodie and jeans, heading north in my silver sedan.",
+          "safety": "I am on the sidewalk, shaking, he is gone."
+        },
+        {
+          "label": "Forgot where I parked",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "Partway through the call you realise you parked on the next street over. Be sheepish, apologise and say nobody needs to come.",
+          "opening": "My car is gone, it was stolen, I parked right here.",
+          "nature": "I parked a red hatchback near the corner this morning and it is not here.",
+          "weapons": "No weapons.",
+          "injuries": "No one is hurt.",
+          "suspect": "I did not see anyone.",
+          "safety": "I am fine."
         }
       ]
     },
@@ -538,18 +1262,44 @@
       "id": "trespass",
       "title": "Trespassing",
       "type": "trespass",
-      "priority": 3,
-      "agencies": ["PD", "SO", "SP"],
-      "minUnits": 1,
-      "ringAfter": [5, 9],
-      "places": [321, 903, 704, 902, 1002, 306, 1105, 503],
+      "agencies": [
+        "PD",
+        "SO",
+        "SP"
+      ],
+      "ringAfter": [
+        5,
+        9
+      ],
+      "places": [
+        321,
+        903,
+        704,
+        902,
+        1002,
+        306,
+        1105,
+        503
+      ],
       "callers": [
-        { "name": "Nick U.", "mood": "a security guard, professional" },
-        { "name": "Dolores A.", "mood": "a property owner, firm and impatient" },
-        { "name": "Reggie J.", "mood": "a worker, nervous about confronting anyone" }
+        {
+          "name": "Nick U.",
+          "mood": "calm and professional"
+        },
+        {
+          "name": "Dolores A.",
+          "mood": "firm and impatient"
+        },
+        {
+          "name": "Reggie J.",
+          "mood": "nervous about confronting anyone"
+        }
       ],
       "variants": [
         {
+          "label": "Light inside a closed building",
+          "priority": 3,
+          "minUnits": 2,
           "opening": "There are people inside a building that has been closed all week.",
           "nature": "I saw a flashlight moving around inside the old building and a door that is open.",
           "weapons": "I did not see weapons.",
@@ -558,6 +1308,20 @@
           "safety": "I am outside at my truck, I will not go in."
         },
         {
+          "label": "Armed man inside",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "There is a man with a gun walking around inside the warehouse, I can see him on the camera.",
+          "nature": "On the camera I can see a man with a pistol walking between the shelves, the side door was forced.",
+          "weapons": "A black handgun in his right hand.",
+          "injuries": "No one is hurt.",
+          "suspect": "White male, medium build, black jacket and a ball cap, alone.",
+          "safety": "I am in a locked office away from him."
+        },
+        {
+          "label": "Man will not leave the property",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "A man is on my property and will not leave, I told him twice.",
           "nature": "A man hopped the fence and is sitting by my equipment. He says he is just looking around.",
           "weapons": "None that I can see, he has a backpack.",
@@ -566,12 +1330,28 @@
           "safety": "I am in my office with the door locked, he is about fifty feet away."
         },
         {
+          "label": "Fence cut, truck inside",
+          "priority": 3,
+          "minUnits": 2,
           "opening": "Somebody cut the fence at the site and drove in with a truck.",
           "nature": "The gate chain has been cut and there is a pickup inside near the materials.",
           "weapons": "I do not know.",
           "injuries": "No injuries.",
           "suspect": "I only saw taillights, dark colored truck.",
           "safety": "I am at the front gate, I am not going further."
+        },
+        {
+          "label": "The contractor's crew",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "If the dispatcher asks about any vehicles or logos, you notice the crew has company vests and a truck with a company logo, and the owner did mention a night crew. Say sorry and that nobody needs to come.",
+          "opening": "There are people on the closed site at night, I think they are trespassing.",
+          "nature": "A few people are working by lantern light near the back of the site.",
+          "weapons": "No weapons.",
+          "injuries": "No one is hurt.",
+          "suspect": "Three workers in high visibility vests and a truck with a logo on the door.",
+          "safety": "I am at the gate, I am fine."
         }
       ]
     },
@@ -579,18 +1359,43 @@
       "id": "suspicious-person",
       "title": "Suspicious person",
       "type": "suspicious_person",
-      "priority": 3,
-      "agencies": ["PD", "SO"],
-      "minUnits": 1,
-      "ringAfter": [4, 9],
-      "places": [214, 222, 306, 313, 223, 325, 404, 1108],
+      "agencies": [
+        "PD",
+        "SO"
+      ],
+      "ringAfter": [
+        4,
+        9
+      ],
+      "places": [
+        214,
+        222,
+        306,
+        313,
+        223,
+        325,
+        404,
+        1108
+      ],
       "callers": [
-        { "name": "Carla N.", "mood": "uneasy, talking quietly from her house" },
-        { "name": "Isaac B.", "mood": "a shopkeeper, direct" },
-        { "name": "Penny O.", "mood": "retired, chatty, very observant" }
+        {
+          "name": "Carla N.",
+          "mood": "uneasy, talking quietly from her house"
+        },
+        {
+          "name": "Isaac B.",
+          "mood": "a shopkeeper, direct"
+        },
+        {
+          "name": "Penny O.",
+          "mood": "retired, chatty, very observant"
+        }
       ],
       "variants": [
         {
+          "label": "Trying car door handles",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "There is a man going down the street trying car door handles.",
           "nature": "He pulls on each door handle, looks inside, and moves to the next car.",
           "weapons": "I have not seen any weapons.",
@@ -599,6 +1404,20 @@
           "safety": "I am inside my house, watching."
         },
         {
+          "label": "Man waving a gun",
+          "priority": 1,
+          "minUnits": 3,
+          "opening": "A man is walking down the street waving a pistol around!",
+          "nature": "He is walking in the road, holding a gun up and shouting at nobody.",
+          "weapons": "A pistol, I can see it clearly.",
+          "injuries": "No one is hurt.",
+          "suspect": "Man in a blue jacket and shorts, he looks agitated, heading toward the main road.",
+          "safety": "I am inside with the blinds shut."
+        },
+        {
+          "label": "Pacing outside a shop",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "A man has been standing outside my shop for an hour looking at the door, and he keeps pacing.",
           "nature": "He is pacing, mumbling to himself and watching customers go in and out.",
           "weapons": "His hands are in his pockets, I cannot tell.",
@@ -607,12 +1426,28 @@
           "safety": "I am behind the counter, the door is open."
         },
         {
+          "label": "Looking in windows",
+          "priority": 2,
+          "minUnits": 2,
           "opening": "Somebody is looking into people's windows on my street.",
           "nature": "A person with a flashlight is going yard to yard and looking in windows.",
           "weapons": "I did not see anything in their hands except the flashlight.",
           "injuries": "No injuries.",
           "suspect": "Dark clothes, a hat. I could not see the face.",
           "safety": "I turned off my lights and I am inside."
+        },
+        {
+          "label": "Waiting for a ride",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "If the dispatcher asks you to look again, a car with a rideshare sticker pulls up and the man gets in. Say sorry and that nobody needs to come.",
+          "opening": "There is a person standing in front of my house for twenty minutes and I do not know them.",
+          "nature": "A man stands on the sidewalk looking at his phone, and now and then at my house.",
+          "weapons": "None.",
+          "injuries": "No.",
+          "suspect": "Man in a black coat and a scarf, holding a phone.",
+          "safety": "I am inside."
         }
       ]
     },
@@ -620,18 +1455,44 @@
       "id": "disabled-vehicle",
       "title": "Disabled vehicle",
       "type": "disabled_vehicle",
-      "priority": 3,
-      "agencies": ["SP", "SO", "PD"],
-      "minUnits": 1,
-      "ringAfter": [5, 10],
-      "places": [504, 1011, 907, 1100, 1210, 909, 9901, 1106],
+      "agencies": [
+        "SP",
+        "SO",
+        "PD"
+      ],
+      "ringAfter": [
+        5,
+        10
+      ],
+      "places": [
+        504,
+        1011,
+        907,
+        1100,
+        1210,
+        909,
+        9901,
+        1106
+      ],
       "callers": [
-        { "name": "Walter J.", "mood": "calm, a bit embarrassed to be stuck" },
-        { "name": "Becca L.", "mood": "worried about being on a fast road" },
-        { "name": "Samir P.", "mood": "impatient, in a hurry" }
+        {
+          "name": "Walter J.",
+          "mood": "calm, a bit embarrassed to be stuck"
+        },
+        {
+          "name": "Becca L.",
+          "mood": "worried about being on a fast road"
+        },
+        {
+          "name": "Samir P.",
+          "mood": "impatient, in a hurry"
+        }
       ],
       "variants": [
         {
+          "label": "Dead car on the shoulder",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "My car died on the highway and I am on the shoulder.",
           "nature": "The engine cut out, I rolled onto the shoulder. Cars are passing fast.",
           "weapons": "No weapons.",
@@ -640,6 +1501,9 @@
           "safety": "I have my hazards on and I am standing behind the guardrail."
         },
         {
+          "label": "Stalled in the lane, nobody inside",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "There is a stalled car in the middle of the road, nobody is in it and the lights are off.",
           "nature": "A dark sedan stopped in the right lane, doors closed, hazards off. People are swerving around it.",
           "weapons": "I do not see any.",
@@ -648,12 +1512,39 @@
           "safety": "I am stopped a little way back with my flashers on."
         },
         {
+          "label": "Debris in the road",
+          "priority": 3,
+          "minUnits": 1,
           "opening": "There is a large piece of debris in the road, I almost hit it.",
           "nature": "A big piece of a truck tire is lying across the lane, it is hard to see.",
           "weapons": "No weapons.",
           "injuries": "No one is hurt.",
           "suspect": "No one involved, I did not see a vehicle that lost it.",
           "safety": "I am past it and pulled over, I am fine."
+        },
+        {
+          "label": "Smoking truck blocking a lane",
+          "priority": 2,
+          "minUnits": 2,
+          "opening": "A truck is stopped in the middle lane with smoke coming from under the hood and people are swerving.",
+          "nature": "A white box truck stopped in the middle lane, smoke from the hood, hazards on.",
+          "weapons": "No weapons.",
+          "injuries": "The driver got out and he is standing by the guardrail, he looks fine.",
+          "suspect": "No suspect.",
+          "safety": "I am a hundred feet back with my flashers on."
+        },
+        {
+          "label": "Tow already on the way",
+          "priority": 4,
+          "minUnits": 0,
+          "type": "false_report",
+          "behavior": "You already called a tow truck and it is on the way, you are parked well off the road. You only call to check whether police need to come, and you accept that they do not.",
+          "opening": "My car broke down on the shoulder but a tow truck is already on the way.",
+          "nature": "I am parked well off the road with my hazards on, the tow company said twenty minutes.",
+          "weapons": "No weapons.",
+          "injuries": "No one is hurt.",
+          "suspect": "No suspect.",
+          "safety": "I am fine, I am well off the roadway."
         }
       ]
     }

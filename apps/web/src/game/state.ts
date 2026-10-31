@@ -45,6 +45,7 @@ export type Action =
   | { type: 'create'; draft: IncidentDraft }
   | { type: 'dispatch'; unitIds: string[] }
   | { type: 'clear' }
+  | { type: 'dismiss' }
   | { type: 'next' }
   | { type: 'reset' };
 
@@ -207,6 +208,7 @@ export function reducer(state: GameState, action: Action): GameState {
         asked: state.asked,
         incident,
         units: state.units,
+        dismissedAt: null,
       });
       const units = state.units.map((u) =>
         incident.unitIds.includes(u.id) ? { ...u, status: 'available' as const, route: [], trail: [] } : u,
@@ -214,6 +216,22 @@ export function reducer(state: GameState, action: Action): GameState {
       return withRadio({ ...state, phase: 'closed', score, units }, [
         ['DISP', `${incident.id} cleared.`],
       ]);
+    }
+    case 'dismiss': {
+      const { incident } = state;
+      if ((state.phase !== 'call' && state.phase !== 'incident') || state.answeredAt === null) return state;
+      if (incident && incident.dispatchedAt !== null) return state;
+      const score = scoreCall({
+        scenario: state.scenario,
+        ringAt: state.ringAt,
+        answeredAt: state.answeredAt,
+        asked: state.asked,
+        incident,
+        units: state.units,
+        dismissedAt: state.clock,
+      });
+      const closed: GameState = { ...state, phase: 'closed', pending: false, score };
+      return incident ? withRadio(closed, [['DISP', `${incident.id} closed, no units sent.`]]) : closed;
     }
     case 'next': {
       if (state.phase !== 'closed') return state;

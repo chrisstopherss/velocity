@@ -1,4 +1,4 @@
-import { callerLocation } from '../data/content';
+import { locationFor } from '../data/content';
 import type { Fact, Scenario, TranscriptLine } from './types';
 
 export interface CallerAnswer {
@@ -38,7 +38,7 @@ export async function askCaller(scenario: Scenario, message: string, transcript:
       body: JSON.stringify({
         scenarioId: scenario.id,
         pick: scenario.pick,
-        location: callerLocation(scenario.truth.postal),
+        location: locationFor(scenario),
         message,
         history,
       }),

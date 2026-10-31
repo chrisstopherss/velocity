@@ -13,6 +13,7 @@ export function ScoreCard({ g }: { g: GameApi }) {
           <Award size={20} aria-hidden="true" />
           Call score: {score.total} / 100
         </h2>
+        <p className="muted">{score.reveal}</p>
         <table className="tbl">
           <tbody>
             {score.lines.map((l) => (

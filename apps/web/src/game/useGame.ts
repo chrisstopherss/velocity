@@ -12,7 +12,7 @@ export function hintFor(state: GameState): string {
     case 'ringing':
       return 'Answer the call.';
     case 'call':
-      return 'Ask for the location, what is happening and any weapons before you create the incident.';
+      return 'Ask for the location, what is happening and any weapons before you create the incident. Not every call needs units.';
     case 'incident':
       return state.incident?.dispatchedAt === null
         ? 'Select the nearest units and dispatch them.'

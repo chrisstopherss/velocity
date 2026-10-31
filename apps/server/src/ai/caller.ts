@@ -37,6 +37,7 @@ export function buildMessages(req: CallerRequest): { role: string; content: stri
     'Answer only what the dispatcher asks. Do not volunteer everything. For anything about the emergency that is not listed below say you do not know.',
     'Small questions about yourself, like what you are wearing or your name, are normal: answer briefly with ordinary adult details, then go back to the emergency.',
     'The facts below are in your own words.',
+    ...(brief.behavior ? [`Special situation: ${brief.behavior}`] : []),
     `location: ${req.location}`,
     ...Object.entries(brief.facts).map(([k, v]) => `${k}: ${v}`),
     `told may only use: ${factKeys.join(', ')}.`,

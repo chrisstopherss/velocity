@@ -48,6 +48,7 @@ describe('data', () => {
 
   it('builds the caller location from the real postal data', () => {
     for (const s of everyCall()) {
+      if (s.locationOverride) continue;
       const answer = answerFor(s, 'location');
       const street = postalById.get(s.truth.postal)?.street;
       expect(answer).toContain(String(s.truth.postal));
@@ -65,28 +66,57 @@ function everyCall() {
 }
 
 describe('scenario pack', () => {
-  it('has enough calls to stay fresh', () => {
+  it('has five variants of every call and enough callers and places', () => {
     expect(templates.length).toBeGreaterThanOrEqual(16);
-    expect(templates.every((t) => t.variants.length >= 3 && t.callers.length >= 3 && t.places.length >= 6)).toBe(true);
+    for (const t of templates) {
+      expect(t.variants, t.id).toHaveLength(5);
+      expect(t.callers.length).toBeGreaterThanOrEqual(3);
+      expect(t.places.length).toBeGreaterThanOrEqual(6);
+    }
   });
 
   it('only uses known types, real postals and complete answers', () => {
     const types = new Set(incidentTypes.map((t) => t.id));
     for (const t of templates) {
       expect(types.has(t.type)).toBe(true);
-      expect([1, 2, 3, 4]).toContain(t.priority);
-      expect(t.minUnits).toBeGreaterThan(0);
       expect(t.ringAfter[0]).toBeLessThanOrEqual(t.ringAfter[1]);
       for (const place of t.places) expect(postalById.has(place), `${t.id} postal ${place}`).toBe(true);
       for (const v of t.variants) {
-        for (const text of Object.values(v)) expect(text.trim().length).toBeGreaterThanOrEqual(3);
+        expect(v.label.length).toBeGreaterThan(3);
+        expect([1, 2, 3, 4]).toContain(v.priority);
+        if (v.type) expect(types.has(v.type)).toBe(true);
+        for (const text of [v.opening, v.nature, v.weapons, v.injuries, v.suspect, v.safety]) {
+          expect(text.trim().length).toBeGreaterThanOrEqual(3);
+        }
       }
     }
   });
 
-  it('has a template for every incident type', () => {
-    const used = new Set(templates.map((t) => t.type));
+  it('keeps the truth of every variant consistent', () => {
+    for (const t of templates) {
+      for (const v of t.variants) {
+        const notReal = v.type === 'false_report';
+        expect(v.minUnits === 0, `${t.id} ${v.label}`).toBe(notReal);
+        if (notReal) {
+          expect(v.priority).toBe(4);
+          expect(v.behavior, `${t.id} ${v.label} needs a behaviour`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it('mixes severe, routine and not real versions of every call', () => {
+    for (const t of templates) {
+      expect(t.variants.some((v) => v.priority === 1 || v.priority === 2), t.id).toBe(true);
+      expect(t.variants.some((v) => v.priority >= 3 && v.minUnits > 0), t.id).toBe(true);
+      expect(t.variants.some((v) => v.minUnits === 0), t.id).toBe(true);
+    }
+  });
+
+  it('has a template for every real incident type', () => {
+    const used = new Set(templates.flatMap((t) => [t.type, ...t.variants.map((v) => v.type ?? t.type)]));
     for (const type of incidentTypes) expect(used.has(type.id), type.id).toBe(true);
+    expect(templates.some((t) => t.variants.some((v) => v.type === 'false_report'))).toBe(true);
   });
 
   it('has unique template ids', () => {
@@ -305,6 +335,65 @@ describe('roads', () => {
       expect(eta).toBeGreaterThanOrEqual(straight - 0.01);
       expect(eta).toBeLessThan(straight * 4 + 20);
     }
+  });
+});
+
+describe('calls that need no units', () => {
+  const prank = () => {
+    const template = templates.find((t) => t.id === 'shots-fired')!;
+    const variant = template.variants.findIndex((v) => v.label === 'Prank caller');
+    return instantiate(template, { caller: 0, variant, place: 0 });
+  };
+  const ready = (scenario: ReturnType<typeof prank>) =>
+    run(untilRinging(initialState(1, scenario)), [{ type: 'answer' }]);
+
+  it('describes the prank as not real and keeps its location vague', () => {
+    const s = prank();
+    expect(s.truth).toMatchObject({ type: 'false_report', priority: 4, minUnits: 0 });
+    expect(answerFor(s, 'location')).toContain('downtown somewhere');
+    expect(answerFor(s, 'location')).not.toContain(String(s.truth.postal));
+  });
+
+  it('lets you close a call without units and scores a logged false report highly', () => {
+    const done = run(ready(prank()), [
+      ...factOrder.map((fact): Action => ({ type: 'ask', fact })),
+      { type: 'create', draft: { type: 'false_report', priority: 4, postal: 322, narrative: 'prank' } },
+      { type: 'dismiss' },
+    ]);
+    expect(done.phase).toBe('closed');
+    expect(done.units.every((u) => u.status === 'available')).toBe(true);
+    expect(done.score!.total).toBeGreaterThanOrEqual(90);
+    expect(done.score!.reveal).toContain('Prank caller');
+    expect(done.score!.reveal).toContain('No response was needed');
+  });
+
+  it('takes points away for sending units to a prank', () => {
+    const sent = run(ready(prank()), [
+      ...factOrder.map((fact): Action => ({ type: 'ask', fact })),
+      { type: 'create', draft: { type: 'false_report', priority: 4, postal: 322, narrative: '' } },
+      { type: 'dispatch', unitIds: ['1A-12', '1A-09'] },
+      { type: 'clear' },
+    ]);
+    const unitLine = sent.score!.lines.find((l) => l.label === 'Unit choice')!;
+    expect(unitLine.points).toBe(0);
+    expect(unitLine.note).toContain('none were needed');
+  });
+
+  it('scores a real call that was closed without units as a miss', () => {
+    const done = run(ready(firstScenario()), [{ type: 'dismiss' }]);
+    expect(done.phase).toBe('closed');
+    expect(done.score!.total).toBeLessThan(30);
+    expect(done.score!.lines.find((l) => l.label === 'Unit choice')!.points).toBe(0);
+  });
+
+  it('only closes a call that has been answered and not yet dispatched', () => {
+    const waiting = initialState();
+    expect(reducer(waiting, { type: 'dismiss' })).toBe(waiting);
+    const sent = run(ready(firstScenario()), [
+      { type: 'create', draft: { type: 'shots_fired', priority: 1, postal: 322, narrative: '' } },
+      { type: 'dispatch', unitIds: ['1A-12'] },
+    ]);
+    expect(reducer(sent, { type: 'dismiss' })).toBe(sent);
   });
 });
 
