@@ -8,9 +8,18 @@ import { RadioLog } from '../panels/RadioLog';
 import { ScoreCard } from '../panels/ScoreCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
+import { resizeAt, Splitter, tracks, useSizes } from '../ui/Splitter';
+
+const GUTTER = 14;
+const COLUMNS = [1.1, 1];
+const LEFT_ROWS = [1.25, 0.8, 1];
+const RIGHT_ROWS = [1.3, 1];
 
 export function ModernShell({ g }: { g: GameApi }) {
   const { state, hint } = g;
+  const [columns, setColumns, resetColumns] = useSizes('modern.columns', COLUMNS);
+  const [leftRows, setLeftRows, resetLeft] = useSizes('modern.left', LEFT_ROWS);
+  const [rightRows, setRightRows, resetRight] = useSizes('modern.right', RIGHT_ROWS);
   return (
     <div className="shell shell-modern">
       <header className="topbar">
@@ -35,14 +44,18 @@ export function ModernShell({ g }: { g: GameApi }) {
           <ThemeSwitch />
         </div>
       </header>
-      <main className="modern-grid">
-        <div className="col">
+      <main className="modern-grid" data-split="" style={{ gridTemplateColumns: tracks(columns, GUTTER) }}>
+        <div className="col" data-split="" style={{ gridTemplateRows: tracks(leftRows, GUTTER) }}>
           <UnitStatus g={g} />
+          <Splitter axis="y" label="Resize unit status and call queue" fixed={GUTTER * 2} onMove={(d) => setLeftRows((cur) => resizeAt(cur, 0, d))} onReset={resetLeft} />
           <CallQueue g={g} />
+          <Splitter axis="y" label="Resize call queue and radio log" fixed={GUTTER * 2} onMove={(d) => setLeftRows((cur) => resizeAt(cur, 1, d))} onReset={resetLeft} />
           <RadioLog g={g} />
         </div>
-        <div className="col">
+        <Splitter axis="x" label="Resize the two columns" fixed={GUTTER} onMove={(d) => setColumns((cur) => resizeAt(cur, 0, d))} onReset={resetColumns} />
+        <div className="col" data-split="" style={{ gridTemplateRows: tracks(rightRows, GUTTER) }}>
           <ActiveCall g={g} />
+          <Splitter axis="y" label="Resize active call and map" fixed={GUTTER} onMove={(d) => setRightRows((cur) => resizeAt(cur, 0, d))} onReset={resetRight} />
           <MapView g={g} />
         </div>
       </main>

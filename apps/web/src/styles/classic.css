@@ -114,35 +114,52 @@
 
 .classic-grid {
   display: grid;
-  grid-template-columns: 560px 1fr 340px;
-  grid-template-rows: 1.2fr 1fr;
-  grid-template-areas:
-    'units map radio'
-    'queue call radio';
-  gap: 6px;
   padding: 6px;
   min-height: 0;
 }
 
+.area-units,
+.area-map,
+.area-radio,
+.area-queue,
+.area-call,
+.area-split-a,
+.area-split-b,
+.area-split-row {
+  min-height: 0;
+  min-width: 0;
+}
 .area-units {
-  grid-area: units;
-  min-height: 0;
-}
-.area-map {
-  grid-area: map;
-  min-height: 0;
-}
-.area-radio {
-  grid-area: radio;
-  min-height: 0;
+  grid-column: 1;
+  grid-row: 1;
 }
 .area-queue {
-  grid-area: queue;
-  min-height: 0;
+  grid-column: 1;
+  grid-row: 3;
+}
+.area-map {
+  grid-column: 3;
+  grid-row: 1;
 }
 .area-call {
-  grid-area: call;
-  min-height: 0;
+  grid-column: 3;
+  grid-row: 3;
+}
+.area-radio {
+  grid-column: 5;
+  grid-row: 1 / span 3;
+}
+.area-split-a {
+  grid-column: 2;
+  grid-row: 1 / span 3;
+}
+.area-split-b {
+  grid-column: 4;
+  grid-row: 1 / span 3;
+}
+.area-split-row {
+  grid-column: 1 / span 3;
+  grid-row: 2;
 }
 
 [data-theme='classic'] .panel {
@@ -283,4 +300,9 @@
 
 [data-theme='classic'] .transcript p.caller {
   background: #1f1f1f;
+}
+
+.classic-grid .splitter {
+  width: 100%;
+  height: 100%;
 }

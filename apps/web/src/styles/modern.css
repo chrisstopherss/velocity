@@ -64,25 +64,14 @@
 
 .modern-grid {
   display: grid;
-  grid-template-columns: 1.1fr 1fr;
-  gap: 14px;
   padding: 0 16px 16px;
   min-height: 0;
 }
 
 .modern-grid .col {
   display: grid;
-  gap: 14px;
   min-height: 0;
   min-width: 0;
-}
-
-.modern-grid .col:first-child {
-  grid-template-rows: 1.25fr 0.8fr 1fr;
-}
-
-.modern-grid .col:last-child {
-  grid-template-rows: 1.3fr 1fr;
 }
 
 [data-theme='modern'] .panel-hd {

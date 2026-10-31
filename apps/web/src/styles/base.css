@@ -726,3 +726,51 @@ textarea {
     transition: none !important;
   }
 }
+
+.splitter {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  touch-action: none;
+  outline: none;
+}
+
+.splitter::before {
+  content: '';
+  position: absolute;
+  border-radius: 2px;
+  background: transparent;
+  transition: background 0.15s ease;
+}
+
+.splitter-x {
+  cursor: col-resize;
+}
+
+.splitter-x::before {
+  top: 25%;
+  bottom: 25%;
+  left: calc(50% - 1.5px);
+  width: 3px;
+}
+
+.splitter-y {
+  cursor: row-resize;
+}
+
+.splitter-y::before {
+  left: 25%;
+  right: 25%;
+  top: calc(50% - 1.5px);
+  height: 3px;
+}
+
+.splitter:hover::before,
+.splitter:focus-visible::before,
+.splitter[data-dragging='true']::before {
+  background: var(--acc);
+}
+
+[data-theme='classic'] .splitter::before {
+  border-radius: 0;
+}

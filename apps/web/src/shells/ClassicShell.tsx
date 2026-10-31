@@ -8,10 +8,17 @@ import { RadioLog } from '../panels/RadioLog';
 import { ScoreCard } from '../panels/ScoreCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
+import { resizeAt, Splitter, tracks, useSizes } from '../ui/Splitter';
+
+const GUTTER = 6;
+const COLUMNS = [1.6, 1.7, 1];
+const ROWS = [1.2, 1];
 
 export function ClassicShell({ g }: { g: GameApi }) {
   const { state, dispatch, selected, sendSelected, hint } = g;
   const { phase, incident } = state;
+  const [columns, setColumns, resetColumns] = useSizes('classic.columns', COLUMNS);
+  const [rows, setRows, resetRows] = useSizes('classic.rows', ROWS);
   const canClear = phase === 'incident' && incident?.dispatchedAt !== null && incident !== null;
 
   return (
@@ -56,7 +63,11 @@ export function ClassicShell({ g }: { g: GameApi }) {
         <span className="hint">{hint}</span>
       </div>
 
-      <main className="classic-grid">
+      <main
+        className="classic-grid"
+        data-split=""
+        style={{ gridTemplateColumns: tracks(columns, GUTTER), gridTemplateRows: tracks(rows, GUTTER) }}
+      >
         <div className="area-units">
           <UnitStatus g={g} />
         </div>
@@ -71,6 +82,15 @@ export function ClassicShell({ g }: { g: GameApi }) {
         </div>
         <div className="area-call">
           <ActiveCall g={g} />
+        </div>
+        <div className="area-split-a">
+          <Splitter axis="x" label="Resize units and map" fixed={GUTTER * 2} onMove={(d) => setColumns((cur) => resizeAt(cur, 0, d))} onReset={resetColumns} />
+        </div>
+        <div className="area-split-b">
+          <Splitter axis="x" label="Resize map and radio log" fixed={GUTTER * 2} onMove={(d) => setColumns((cur) => resizeAt(cur, 1, d))} onReset={resetColumns} />
+        </div>
+        <div className="area-split-row">
+          <Splitter axis="y" label="Resize the top and bottom panels" fixed={GUTTER} onMove={(d) => setRows((cur) => resizeAt(cur, 0, d))} onReset={resetRows} />
         </div>
       </main>
 

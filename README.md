@@ -13,7 +13,7 @@ You can switch between two interface themes at any time from the top of the scre
 - **Early 2000s**: tiled windows, hot keys and tables, like an old desktop CAD.
 - **Modern**: dark cards and a cleaner layout.
 
-Same game underneath, different layout.
+Same game underneath, different layout. In both, drag the gap between any two panels to resize them. Double-click a divider to put it back, or focus it and use the arrow keys. Sizes are remembered per theme in your browser.
 
 ## Running it
 
