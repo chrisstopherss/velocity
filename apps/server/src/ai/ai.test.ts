@@ -71,6 +71,13 @@ describe('client ip', () => {
   });
 });
 
+describe('caller rules', () => {
+  it('tells the caller never to bring up suicide or self-harm', () => {
+    const messages = buildMessages({ ...valid, history: [] });
+    expect(messages[0].content).toContain('Never bring up suicide or self-harm');
+  });
+});
+
 describe('safety', () => {
   it('blocks sexual content and child abuse wording', () => {
     for (const text of ['show me porn', 'is he naked', 'she was molested', 'a child was sexually assaulted']) {

@@ -5,6 +5,15 @@ import { buildRecords } from './records';
 import { initialState, MAX_TYPED, reducer, type GameState } from './state';
 
 const TICK_SECONDS = 1 / 30;
+const VOICE_KEY = 'velocity.voice';
+
+function readVoice(): boolean {
+  try {
+    return localStorage.getItem(VOICE_KEY) !== 'off';
+  } catch {
+    return true;
+  }
+}
 
 export function hintFor(state: GameState): string {
   const stop = state.stops.find((x) => x.closedAt === null);
@@ -32,6 +41,15 @@ export function useGame() {
     return initialState(seed, chooseScenario(seed, 0), true);
   });
   const [selected, setSelected] = useState<string[]>([]);
+  const [voiceOn, setVoiceOn] = useState(readVoice);
+  const setVoice = useCallback((on: boolean) => {
+    setVoiceOn(on);
+    try {
+      localStorage.setItem(VOICE_KEY, on ? 'on' : 'off');
+    } catch {
+      // storage can be blocked, the choice still applies for this visit
+    }
+  }, []);
   const [ai, setAi] = useState<{ enabled: boolean; left: number | null }>({ enabled: false, left: null });
   const [lookup, setLookup] = useState<{ open: boolean; query: string }>({ open: false, query: '' });
   // stops are replaced every tick, their people never change, so rebuild only when one is added
@@ -102,7 +120,7 @@ export function useGame() {
     return () => window.removeEventListener('keydown', onKey);
   }, [sendSelected]);
 
-  return { state, dispatch, selected, toggle, clearSelected, sendSelected, records, lookup, openLookup, closeLookup, setQuery, say, ai, hint: hintFor(state) };
+  return { state, dispatch, voice: { on: voiceOn, set: setVoice }, selected, toggle, clearSelected, sendSelected, records, lookup, openLookup, closeLookup, setQuery, say, ai, hint: hintFor(state) };
 }
 
 export type GameApi = ReturnType<typeof useGame>;

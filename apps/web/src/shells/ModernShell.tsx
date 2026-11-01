@@ -10,6 +10,8 @@ import { ScoreCard } from '../panels/ScoreCard';
 import { StopCard } from '../panels/StopCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
+import { VoiceController } from '../voice/VoiceController';
+import { VoiceToggle } from '../voice/VoiceToggle';
 import { resizeAt, Splitter, tracks, useSizes } from '../ui/Splitter';
 
 const GUTTER = 14;
@@ -47,6 +49,7 @@ export function ModernShell({ g }: { g: GameApi }) {
             <GraduationCap size={14} aria-hidden="true" />
             Beginner
           </span>
+          <VoiceToggle g={g} />
           <ThemeSwitch />
         </div>
       </header>
@@ -65,6 +68,7 @@ export function ModernShell({ g }: { g: GameApi }) {
           <MapView g={g} />
         </div>
       </main>
+      <VoiceController g={g} />
       <StopCard g={g} />
       <RecordsSearch g={g} />
       <ScoreCard g={g} />

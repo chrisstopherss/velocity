@@ -1090,6 +1090,50 @@ textarea {
   font-size: 22px;
 }
 
+.voice-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.voice-toggle[aria-pressed='false'] {
+  color: var(--muted);
+}
+
+.menu-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ask-form .mic {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 9px;
+  border: 1px solid var(--line);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--panel2);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ask-form .mic.on {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.ask-form .mic:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 @keyframes rise {
   from {
     opacity: 0;

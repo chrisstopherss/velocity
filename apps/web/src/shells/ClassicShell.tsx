@@ -10,6 +10,8 @@ import { ScoreCard } from '../panels/ScoreCard';
 import { StopCard } from '../panels/StopCard';
 import { UnitStatus } from '../panels/UnitStatus';
 import { ThemeSwitch } from '../theme/ThemeSwitch';
+import { VoiceController } from '../voice/VoiceController';
+import { VoiceToggle } from '../voice/VoiceToggle';
 import { resizeAt, Splitter, tracks, useSizes } from '../ui/Splitter';
 
 const GUTTER = 6;
@@ -30,7 +32,10 @@ export function ClassicShell({ g }: { g: GameApi }) {
           <img src="/brand/logo.png" alt="" width={40} height={16} />
           Welcome to Velocity CAD
         </span>
-        <ThemeSwitch />
+        <span className="menu-right">
+          <VoiceToggle g={g} />
+          <ThemeSwitch />
+        </span>
       </div>
 
       <div className="fkeys">
@@ -109,6 +114,7 @@ export function ClassicShell({ g }: { g: GameApi }) {
           Online
         </span>
       </div>
+      <VoiceController g={g} />
       <StopCard g={g} />
       <RecordsSearch g={g} />
       <ScoreCard g={g} />

@@ -1,5 +1,5 @@
-import { Check, ClipboardList, Headset, PhoneCall, Send } from 'lucide-react';
-import { useState } from 'react';
+import { Check, ClipboardList, Headset, Mic, PhoneCall, Send } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { factLabels, factOrder, factQuestions, incidentTypes, priorities } from '../data/content';
 import { postalById, postalDetail } from '../data/postals';
 import { MAX_TYPED, MAX_TYPED_CHARS } from '../game/state';
@@ -7,6 +7,7 @@ import type { GameApi } from '../game/useGame';
 import type { IncidentTypeId, Priority } from '../game/types';
 import { Panel } from '../ui/Panel';
 import { Select } from '../ui/Select';
+import { canListen, listen, stopSpeaking, type Listener } from '../voice/speech';
 
 const typeOptions = incidentTypes.map((t) => ({ value: t.id, label: t.label }));
 const priorityOptions = priorities.map((p) => ({ value: p.id, label: p.label }));
@@ -14,10 +15,33 @@ const priorityOptions = priorities.map((p) => ({ value: p.id, label: p.label }))
 function AskBox({ g }: { g: GameApi }) {
   const { state, ai, say } = g;
   const [text, setText] = useState('');
+  const [hearing, setHearing] = useState(false);
+  const [micError, setMicError] = useState('');
+  const mic = useRef<Listener | null>(null);
+  useEffect(() => () => mic.current?.stop(), []);
   if (!ai.enabled) return null;
 
   const used = ai.left === 0 || state.typed >= MAX_TYPED;
   const locked = state.pending || used;
+
+  const toggleMic = () => {
+    if (hearing) {
+      mic.current?.stop();
+      return;
+    }
+    stopSpeaking();
+    setMicError('');
+    mic.current = listen(
+      (heard) => say(heard),
+      (error) => {
+        setHearing(false);
+        if (error === 'not-allowed' || error === 'service-not-allowed') setMicError('The microphone is blocked in this browser.');
+        else if (error === 'no-speech') setMicError('Did not hear anything, try again.');
+      },
+    );
+    if (mic.current) setHearing(true);
+  };
+
   return (
     <>
       <form
@@ -37,12 +61,17 @@ function AskBox({ g }: { g: GameApi }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
         />
+        {canListen() ? (
+          <button type="button" className={hearing ? 'mic on' : 'mic'} aria-label={hearing ? 'Stop listening' : 'Speak to the caller'} aria-pressed={hearing} disabled={locked} onClick={toggleMic}>
+            <Mic size={14} aria-hidden="true" />
+          </button>
+        ) : null}
         <button type="submit" aria-label="Send question" disabled={locked || !text.trim()}>
           <Send size={14} aria-hidden="true" />
         </button>
       </form>
       <p className="muted ask-meta">
-        {state.pending ? 'Caller is answering...' : `${state.typed}/${MAX_TYPED} typed questions this call`}
+        {micError || (hearing ? 'Listening, say your question.' : state.pending ? 'Caller is answering...' : `${state.typed}/${MAX_TYPED} questions this call`)}
       </p>
     </>
   );

@@ -386,3 +386,13 @@
 [data-theme='classic'] .record h3 {
   font-size: 14px;
 }
+
+[data-theme='classic'] .voice-toggle {
+  border: 2px solid;
+  border-color: #cfcfcf #404040 #404040 #cfcfcf;
+  border-radius: 0;
+  background: #bdbdbd;
+  color: #111;
+  padding: 1px 8px;
+  font-weight: 700;
+}
