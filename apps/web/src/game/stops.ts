@@ -2,7 +2,7 @@ import { fullName, makePerson, makeVehicle, makeWarrant, dateText, TODAY } from 
 import { mulberry32 } from '../data/scenarios';
 import { postalLabel } from '../data/postals';
 import { etaSeconds, nearestPostal } from './sim';
-import type { Stop, StopOutcome, StopResult, Unit } from './types';
+import type { FalseKind, Stop, StopOutcome, StopResult, Unit } from './types';
 
 export const PLATE_DELAY = 4;
 const REMIND_AFTER = 60;
@@ -14,43 +14,120 @@ export const CONFIRM_DELAY = 6;
 const FALSE_HIT_CHANCE = 0.3;
 
 
-const outcomeWeights: [StopOutcome, number][] = [
-  ['routine', 45],
-  ['expired', 25],
-  ['warrant', 12],
-  ['stolen', 10],
-  ['felony', 8],
-];
+interface Variation {
+  weight: number;
+  backup: number;
+  confirm: boolean;
+  label: string;
+  readout: string;
+  confirmed: string;
+  reason: string;
+}
 
-const readout: Record<StopOutcome, string> = {
-  routine: 'registration valid, no wants or warrants',
-  expired: 'registration expired two months ago, otherwise valid',
-  warrant: 'registered owner has an active warrant',
-  stolen: 'reported stolen yesterday, hit not confirmed',
-  felony: 'matches a vehicle linked to an armed robbery, hit not confirmed, use extreme caution',
-};
-
-const confirmed: Record<StopOutcome, string> = {
-  routine: '',
-  expired: '',
-  warrant: 'the warrant is active',
-  stolen: 'the vehicle is stolen',
-  felony: 'the vehicle is linked to an armed robbery, use extreme caution',
+const variations: Record<StopOutcome, Variation> = {
+  routine: { weight: 22, backup: 0, confirm: false, label: 'a clean plate', readout: 'registration valid, no wants or warrants', confirmed: '', reason: '' },
+  expired: { weight: 10, backup: 0, confirm: false, label: 'an expired registration', readout: 'registration expired two months ago, otherwise valid', confirmed: '', reason: '' },
+  suspended: {
+    weight: 8,
+    backup: 0,
+    confirm: false,
+    label: 'a suspended licence',
+    readout: "registration valid, the registered owner's licence is suspended",
+    confirmed: '',
+    reason: '',
+  },
+  uninsured: { weight: 8, backup: 0, confirm: false, label: 'an insurance lapse', readout: 'registration valid, no insurance on file for three weeks', confirmed: '', reason: '' },
+  lapsed: {
+    weight: 5,
+    backup: 0,
+    confirm: false,
+    label: 'an expired registration and a suspended licence',
+    readout: "registration expired two months ago, the registered owner's licence is suspended",
+    confirmed: '',
+    reason: '',
+  },
+  probation: {
+    weight: 5,
+    backup: 0,
+    confirm: false,
+    label: 'a probation flag',
+    readout: 'registration valid, the registered owner is on probation with a search condition, no warrants',
+    confirmed: '',
+    reason: '',
+  },
+  impaired: {
+    weight: 7,
+    backup: 1,
+    confirm: false,
+    label: 'a clean plate with a suspected impaired driver',
+    readout: 'registration valid, no wants or warrants',
+    confirmed: '',
+    reason: 'driver appears impaired',
+  },
+  missing: {
+    weight: 4,
+    backup: 0,
+    confirm: true,
+    label: 'a missing person hit',
+    readout: 'the registered owner is reported missing, hit not confirmed',
+    confirmed: 'the owner is reported missing and the reporting agency wants a welfare check, no arrest',
+    reason: '',
+  },
+  mismatch: {
+    weight: 6,
+    backup: 1,
+    confirm: true,
+    label: 'a plate that belongs to another vehicle',
+    readout: 'the plate is registered to a different type of vehicle than the one stopped, possible switched plates, hit not confirmed',
+    confirmed: 'the plate belongs to a motorcycle, so these are switched plates and the vehicle may be stolen',
+    reason: 'the plate does not match the vehicle, possible switched plates',
+  },
+  caution: {
+    weight: 5,
+    backup: 1,
+    confirm: true,
+    label: 'an officer safety caution',
+    readout: 'officer safety caution on the registered owner for prior assault on officers, hit not confirmed',
+    confirmed: 'the caution is on file for prior assault on officers',
+    reason: 'officer safety caution on the owner',
+  },
+  warrant: {
+    weight: 8,
+    backup: 1,
+    confirm: true,
+    label: 'a warrant hit',
+    readout: 'registered owner has an active warrant, hit not confirmed',
+    confirmed: 'the warrant is active',
+    reason: 'driver is the owner with a warrant',
+  },
+  stolen: {
+    weight: 8,
+    backup: 1,
+    confirm: true,
+    label: 'a stolen vehicle hit',
+    readout: 'reported stolen yesterday, hit not confirmed',
+    confirmed: 'the vehicle is stolen',
+    reason: 'vehicle is reported stolen',
+  },
+  felony: {
+    weight: 4,
+    backup: 2,
+    confirm: true,
+    label: 'a felony hit',
+    readout: 'matches a vehicle linked to an armed robbery, hit not confirmed, use extreme caution',
+    confirmed: 'the vehicle is linked to an armed robbery, use extreme caution',
+    reason: 'possible armed felony suspect',
+  },
 };
 
 const plateLine = (stop: Stop) =>
-  `${stop.car.year} ${stop.car.make} ${stop.car.model}, ${stop.car.color}, registered to ${fullName(stop.owner)}, ${readout[stop.outcome]}`;
+  `${stop.car.year} ${stop.car.make} ${stop.car.model}, ${stop.car.color}, registered to ${fullName(stop.owner)}, ${variations[stop.outcome].readout}`;
 
-const backupReason: Record<StopOutcome, string> = {
-  routine: '',
-  expired: '',
-  warrant: 'driver is the owner with a warrant',
-  stolen: 'vehicle is reported stolen',
-  felony: 'possible armed felony suspect',
-};
+export const backupNeeded = (outcome: StopOutcome) => variations[outcome].backup;
+export const needsBackup = (outcome: StopOutcome) => variations[outcome].backup > 0;
+export const needsConfirm = (outcome: StopOutcome) => variations[outcome].confirm;
+export const outcomes = Object.keys(variations) as StopOutcome[];
 
-export const needsBackup = (outcome: StopOutcome) => outcome === 'warrant' || outcome === 'stolen' || outcome === 'felony';
-export const backupNeeded = (outcome: StopOutcome) => (outcome === 'felony' ? 2 : needsBackup(outcome) ? 1 : 0);
 export function nearestAvailable(units: Unit[], postal: number, count: number): string[] {
   return units
     .filter((u) => u.status === 'available')
@@ -61,52 +138,97 @@ export function nearestAvailable(units: Unit[], postal: number, count: number): 
 }
 
 export const stillNeeded = (stop: Stop) => Math.max(1, backupNeeded(stop.outcome) - stop.backupIds.length);
-export const needsConfirm = (outcome: StopOutcome) => needsBackup(outcome);
 export const isOpen = (stop: Stop) => stop.closedAt === null;
 export const stopWhere = (stop: Pick<Stop, 'postal'>) => postalLabel(stop.postal);
+
+const suspend = (p: { status: 'valid' | 'suspended'; suspendedFor: string | null }) => {
+  p.status = 'suspended';
+  p.suspendedFor = 'Unpaid fines';
+};
 
 export function makeStop(seed: number, n: number, clock: number, unit: Unit): Stop {
   const rand = mulberry32(seed * 31 + n * 7919);
 
-  const total = outcomeWeights.reduce((sum, [, w]) => sum + w, 0);
+  const total = outcomes.reduce((sum, o) => sum + variations[o].weight, 0);
   let roll = rand() * total;
   let outcome: StopOutcome = 'routine';
-  for (const [o, w] of outcomeWeights) {
-    if (roll < w) {
+  for (const o of outcomes) {
+    if (roll < variations[o].weight) {
       outcome = o;
       break;
     }
-    roll -= w;
+    roll -= variations[o].weight;
   }
 
-  const hit = outcome === 'stolen' || outcome === 'felony';
+  const notOwner = outcome === 'warrant' && rand() < 0.25;
+  const separateOwner = outcome === 'stolen' || outcome === 'felony' || outcome === 'mismatch' || notOwner;
   const driver = makePerson(rand, 1000 + n * 2);
-  const owner = hit ? makePerson(rand, 1001 + n * 2) : driver;
+  const owner = separateOwner ? makePerson(rand, 1001 + n * 2) : driver;
   const car = makeVehicle(rand, owner.id);
+  const seen = outcome === 'mismatch' ? makeVehicle(rand, driver.id) : car;
 
-  if (outcome === 'expired') {
-    const lapsed = new Date(TODAY.getTime() - 62 * 86400000);
-    car.status = 'expired';
-    car.expires = dateText(lapsed);
-  } else {
-    car.status = hit ? 'stolen' : 'valid';
-    if (!hit) car.expires = dateText(new Date(TODAY.getFullYear() + 1, TODAY.getMonth(), 1));
+  for (const p of [driver, owner]) {
+    p.warrant = null;
+    p.caution = null;
+    p.alert = null;
+    p.status = 'valid';
+    p.suspendedFor = null;
   }
-  if (hit) car.reportedBy = 'Liberty County Sheriff';
-  if (outcome === 'routine' || outcome === 'expired') {
-    driver.warrant = null;
-    driver.status = 'valid';
-    driver.suspendedFor = null;
-  }
-  if (outcome === 'warrant') driver.warrant = makeWarrant(rand);
-  if (outcome === 'felony') {
-    driver.warrant = { offence: 'Armed robbery', court: 'Liberty County Superior Court', bond: 25000, extradition: 'Statewide' };
-    driver.caution = 'Armed and dangerous';
+  car.status = 'valid';
+  car.insured = true;
+  car.expires = dateText(new Date(TODAY.getFullYear() + 1, TODAY.getMonth(), 1));
+
+  const lapsedOn = dateText(new Date(TODAY.getTime() - 62 * 86400000));
+  switch (outcome) {
+    case 'expired':
+      car.status = 'expired';
+      car.expires = lapsedOn;
+      break;
+    case 'lapsed':
+      car.status = 'expired';
+      car.expires = lapsedOn;
+      suspend(owner);
+      break;
+    case 'suspended':
+      suspend(owner);
+      break;
+    case 'uninsured':
+      car.insured = false;
+      break;
+    case 'probation':
+      owner.alert = 'On probation, search condition';
+      break;
+    case 'missing':
+      owner.alert = 'Reported missing, welfare check requested';
+      break;
+    case 'caution':
+      owner.caution = 'Prior assault on officers, use caution';
+      break;
+    case 'mismatch':
+      Object.assign(car, { make: 'Harley-Davidson', model: 'Sportster', body: 'motorcycle', color: 'black', year: 2008 + Math.floor(rand() * 12) });
+      break;
+    case 'warrant':
+      owner.warrant = makeWarrant(rand);
+      break;
+    case 'stolen':
+      car.status = 'stolen';
+      car.reportedBy = 'Liberty County Sheriff';
+      break;
+    case 'felony':
+      car.status = 'stolen';
+      car.reportedBy = 'Liberty County Sheriff';
+      driver.warrant = { offence: 'Armed robbery', court: 'Liberty County Superior Court', bond: 25000, extradition: 'Statewide' };
+      driver.caution = 'Armed and dangerous';
+      break;
+    default:
+      break;
   }
 
-  const falseHit = outcome === 'stolen' && rand() < FALSE_HIT_CHANCE;
-  const other = falseHit ? makeVehicle(rand, owner.id) : car;
-  if (falseHit && other.make === car.make && other.model === car.model) other.year = car.year > 2012 ? car.year - 3 : car.year + 3;
+  let falseKind: FalseKind | null = null;
+  if (outcome === 'stolen' && rand() < FALSE_HIT_CHANCE) falseKind = rand() < 0.5 ? 'wrongcar' : 'recovered';
+  if (notOwner) falseKind = 'notowner';
+  const other = falseKind === 'wrongcar' ? makeVehicle(rand, owner.id) : car;
+  if (falseKind === 'wrongcar' && other.make === car.make && other.model === car.model) other.year = car.year > 2012 ? car.year - 3 : car.year + 3;
   const reported = `${other.year} ${other.make} ${other.model}, ${other.color}`;
 
   return {
@@ -115,7 +237,7 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
     x: unit.x,
     y: unit.y,
     postal: nearestPostal(unit.x, unit.y) ?? 0,
-    vehicle: `${car.color} ${car.body}`,
+    vehicle: `${seen.color} ${seen.body}`,
     plate: car.plate,
     car,
     driver,
@@ -127,7 +249,8 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
     plateAskedAt: null,
     plateAt: null,
     plateResult: null,
-    falseHit,
+    falseHit: falseKind !== null,
+    falseKind,
     reported,
     confirmAskedAt: null,
     confirmAt: null,
@@ -187,7 +310,7 @@ export function scoreStop(stop: Stop, failed: boolean): StopResult {
       notes.push(`Backup was not needed, ${stop.backupIds.length} units were sent anyway.`);
     }
   } else if (stop.backupIds.length === 0) {
-    notes.push(`The plate was ${stop.outcome === 'felony' ? 'a felony hit' : stop.outcome}, backup was needed and none came.`);
+    notes.push(`The plate returned ${variations[stop.outcome].label}, backup was needed and none came.`);
   } else {
     const wait = stop.backupSentAt !== null && stop.backupAskedAt !== null ? stop.backupSentAt - stop.backupAskedAt : Infinity;
     const enough = stop.backupIds.length >= needed;
@@ -252,22 +375,33 @@ export function advanceStops(input: Input): Output {
 
     if (s.confirmAskedAt !== null && s.confirmAt === null && clock >= s.confirmAskedAt + CONFIRM_DELAY) {
       s = { ...s, confirmAt: clock };
-      if (s.falseHit) {
+      if (s.falseKind === 'wrongcar') {
         lines.push(['DISP', `${s.unitId}, the sheriff's office says the stolen vehicle is a ${s.reported}. That is not your vehicle, the plate was entered in error.`]);
         lines.push([s.unitId, `${s.unitId} copy, vehicle does not match, standing down on backup.`]);
+      } else if (s.falseKind === 'recovered') {
+        lines.push(['DISP', `${s.unitId}, the sheriff's office says the owner recovered that vehicle yesterday, the stolen entry was never cleared.`]);
+        lines.push([s.unitId, `${s.unitId} copy, no longer stolen, standing down on backup.`]);
+      } else if (s.falseKind === 'notowner') {
+        lines.push(['DISP', `${s.unitId}, the warrant belongs to the registered owner, ${fullName(s.owner)}. Check that your driver is the owner.`]);
+        lines.push([s.unitId, `${s.unitId} copy, the driver is not the owner, standing down on backup.`]);
       } else {
-        lines.push(['DISP', `${s.unitId}, the hit is confirmed with the originating agency, ${confirmed[s.outcome]}.`]);
+        lines.push(['DISP', `${s.unitId}, the hit is confirmed with the originating agency, ${variations[s.outcome].confirmed}.`]);
       }
     }
     const cleared = s.falseHit && s.confirmAt !== null;
+
+    if (s.outcome === 'impaired' && s.ackAt !== null && s.backupAskedAt === null) {
+      s = { ...s, backupAskedAt: clock };
+      lines.push([s.unitId, `${s.unitId} request a unit for backup at the stop, ${variations.impaired.reason}.`, true]);
+    }
 
     if (s.plateAskedAt !== null && s.plateResult === null && clock >= s.plateAskedAt + PLATE_DELAY) {
       const line = plateLine(s);
       s = { ...s, plateResult: line, plateAt: clock };
       lines.push(['DISP', `${s.unitId}, plate ${s.plate} returns ${line}.`]);
-      if (needed > 0) {
+      if (needed > 0 && s.outcome !== 'impaired') {
         s = { ...s, backupAskedAt: clock };
-        lines.push([s.unitId, `${s.unitId} copy, request ${needed > 1 ? 'two units' : 'a unit'} for backup at the stop, ${backupReason[s.outcome]}.`, true]);
+        lines.push([s.unitId, `${s.unitId} copy, request ${needed > 1 ? 'two units' : 'a unit'} for backup at the stop, ${variations[s.outcome].reason}.`, true]);
       }
     }
 

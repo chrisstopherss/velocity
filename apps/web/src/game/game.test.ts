@@ -10,7 +10,7 @@ import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { fullName } from '../data/people';
 import { buildRecords, search } from './records';
-import { CONFIRM_DELAY, makeStop, nearestAvailable, PLATE_DELAY, scoreStop, stillNeeded } from './stops';
+import { CONFIRM_DELAY, makeStop, nearestAvailable, outcomes, PLATE_DELAY, scoreStop, stillNeeded } from './stops';
 import type { Stop } from './types';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
@@ -647,7 +647,7 @@ describe('traffic stops', () => {
     let s = initialState(3, firstScenario(), true);
     s = reducer(s, { type: 'tick', dt: s.nextStopAt - s.clock + 0.1 });
     const stop = s.stops[0];
-    s = { ...s, stops: [{ ...stop, outcome, falseHit }] };
+    s = { ...s, stops: [{ ...stop, outcome, falseHit, falseKind: falseHit ? 'wrongcar' : null }] };
     return s;
   };
 
@@ -732,7 +732,67 @@ describe('traffic stops', () => {
     expect(scoreStop({ ...base, backupIds: ['1A-12'], backupSentAt: 30 }, false).total).toBe(60);
   });
 
-  it('scores a clean stop with no backup at full marks', () => {
+  it('can produce every kind of stop', () => {
+    const seen = new Set<string>();
+    for (let n = 1; n < 600; n++) seen.add(makeStop(21, n, 0, startingUnits()[0]).outcome);
+    expect([...seen].sort()).toEqual([...outcomes].sort());
+    expect(outcomes.length).toBeGreaterThanOrEqual(13);
+  });
+
+  it('keeps the records in line with what the plate returns', () => {
+    const find = (outcome: Stop['outcome']) => {
+      for (let n = 1; n < 800; n++) {
+        const stop = makeStop(33, n, 0, startingUnits()[0]);
+        if (stop.outcome === outcome && !stop.falseHit) return stop;
+      }
+      throw new Error(outcome);
+    };
+    expect(find('suspended').owner.status).toBe('suspended');
+    expect(find('uninsured').car.insured).toBe(false);
+    const lapsed = find('lapsed');
+    expect(lapsed.car.status).toBe('expired');
+    expect(lapsed.owner.status).toBe('suspended');
+    expect(find('probation').owner.alert).toContain('probation');
+    expect(find('missing').owner.alert).toContain('missing');
+    expect(find('caution').owner.caution).toContain('assault');
+    const mismatch = find('mismatch');
+    expect(mismatch.car.body).toBe('motorcycle');
+    expect(mismatch.vehicle).not.toContain('motorcycle');
+    expect(mismatch.owner.id).not.toBe(mismatch.driver.id);
+    for (const o of ['routine', 'uninsured', 'impaired'] as const) {
+      const clean = find(o);
+      expect(clean.driver.warrant).toBeNull();
+      expect(clean.owner.status).toBe('valid');
+    }
+  });
+
+  it('asks for a unit as soon as an impaired driver is copied', () => {
+    let s = run(withStop('impaired'), [{ type: 'stopCopy' }]);
+    s = reducer(s, { type: 'tick', dt: 0.1 });
+    expect(s.stops[0].backupAskedAt).not.toBeNull();
+    expect(s.radio.some((l) => l.text.includes('appears impaired'))).toBe(true);
+  });
+
+  it('closes a recovered vehicle and a warrant that belongs to someone else once confirmed', () => {
+    for (const kind of ['recovered', 'notowner'] as const) {
+      const base = withStop(kind === 'notowner' ? 'warrant' : 'stolen', true);
+      let s: GameState = { ...base, stops: [{ ...base.stops[0], falseKind: kind }] };
+      s = run(s, [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+      s = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+      s = reducer(s, { type: 'stopConfirm' });
+      s = reducer(s, { type: 'tick', dt: CONFIRM_DELAY + 0.1 });
+      expect(s.radio.some((l) => (kind === 'recovered' ? l.text.includes('recovered') : l.text.includes('Check that your driver')))).toBe(true);
+      s = reducer(s, { type: 'tick', dt: 10 });
+      expect(s.stops[0].closedAt).not.toBeNull();
+    }
+  });
+
+  it('scores a missing person hit with no backup at full marks once confirmed', () => {
+    const base = { ...withStop('missing').stops[0], ackAt: 5, plateAskedAt: 10, plateAt: 14, confirmAskedAt: 20, confirmAt: 26 };
+    expect(scoreStop(base, false).total).toBe(100);
+  });
+
+  it('scores a clean stop with no backup at full marks' , () => {
     const stop = { ...withStop().stops[0], ackAt: 5, plateAskedAt: 10 };
     expect(scoreStop(stop, false).total).toBe(100);
     expect(scoreStop({ ...stop, backupIds: ['1A-12'] }, false).total).toBe(50);

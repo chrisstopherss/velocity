@@ -9,9 +9,23 @@ import type { GameApi } from '../game/useGame';
 const headline: Record<StopOutcome, { tone: 'ok' | 'warn' | 'bad'; title: string; note: string }> = {
   routine: { tone: 'ok', title: 'No wants', note: 'Registration valid. The unit will handle the stop.' },
   expired: { tone: 'warn', title: 'Registration expired', note: 'Otherwise valid, no wants. The unit will handle it.' },
-  warrant: { tone: 'bad', title: 'Owner has a warrant', note: 'Hit not confirmed. The unit asks for a unit to back them up.' },
-  stolen: { tone: 'bad', title: 'Stolen vehicle', note: 'Hit not confirmed. The unit asks for a unit to back them up.' },
+  suspended: { tone: 'warn', title: 'Licence suspended', note: "Registration valid, but the owner's licence is suspended. The unit will handle it." },
+  uninsured: { tone: 'warn', title: 'No insurance on file', note: 'Registration valid, insurance lapsed three weeks ago. The unit will handle it.' },
+  lapsed: { tone: 'warn', title: 'Expired and suspended', note: "Registration expired and the owner's licence is suspended. The unit will handle it." },
+  probation: { tone: 'warn', title: 'Owner on probation', note: 'Search condition on file, no warrants. No backup needed.' },
+  impaired: { tone: 'ok', title: 'No wants', note: 'The plate is clean, the unit asked for backup because the driver appears impaired.' },
+  missing: { tone: 'warn', title: 'Owner reported missing', note: 'Hit not confirmed. The reporting agency needs to be contacted, no backup needed.' },
+  mismatch: { tone: 'bad', title: 'Plate does not match', note: 'The plate belongs to a different vehicle. Possible switched plates, hit not confirmed. The unit asks for a unit.' },
+  caution: { tone: 'bad', title: 'Officer safety caution', note: 'Hit not confirmed. Prior assault on officers, the unit asks for a unit.' },
+  warrant: { tone: 'bad', title: 'Owner has a warrant', note: 'Hit not confirmed. The unit asks for a unit for backup.' },
+  stolen: { tone: 'bad', title: 'Stolen vehicle', note: 'Hit not confirmed. The unit asks for a unit for backup.' },
   felony: { tone: 'bad', title: 'Armed felony match', note: 'Use extreme caution. The unit asks for two units.' },
+};
+
+const falseText = {
+  wrongcar: { title: 'Not a match', note: (s: Stop) => `The sheriff says the stolen vehicle is a ${s.reported}. This is a different car, the unit stands down.` },
+  recovered: { title: 'Already recovered', note: () => 'The owner got the car back yesterday and the entry was never cleared. The unit stands down.' },
+  notowner: { title: 'Warrant is the owner’s', note: () => 'The driver is not the registered owner. The unit stands down.' },
 };
 
 interface Pos {
@@ -63,7 +77,9 @@ function Status({ g, stop }: { g: GameApi; stop: Stop }) {
     return (
       <p className="stop-status info">
         <Info size={16} aria-hidden="true" />
-        <span>Copied. Run the plate when you are ready.</span>
+        <span>
+          Copied.{stop.outcome === 'impaired' ? ` ${stop.unitId} reports the driver appears impaired and asks for a unit.` : ''} Run the plate when you are ready.
+        </span>
       </p>
     );
   }
@@ -75,12 +91,14 @@ function Status({ g, stop }: { g: GameApi; stop: Stop }) {
       </p>
     );
   }
-  if (stop.confirmAt !== null && stop.falseHit) {
+  if (stop.confirmAt !== null && stop.falseKind) {
+    const text = falseText[stop.falseKind];
     return (
       <p className="stop-status warn">
         <Info size={16} aria-hidden="true" />
         <span>
-          <b>Not a match</b>The sheriff says the stolen vehicle is a {stop.reported}. This is a different car, the unit stands down.
+          <b>{text.title}</b>
+          {text.note(stop)}
         </span>
       </p>
     );

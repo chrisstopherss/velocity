@@ -121,7 +121,22 @@ export type Phase = 'waiting' | 'ringing' | 'call' | 'incident' | 'closed';
 
 import type { Person, Vehicle } from '../data/people';
 
-export type StopOutcome = 'routine' | 'expired' | 'warrant' | 'stolen' | 'felony';
+export type StopOutcome =
+  | 'routine'
+  | 'expired'
+  | 'suspended'
+  | 'uninsured'
+  | 'lapsed'
+  | 'probation'
+  | 'impaired'
+  | 'missing'
+  | 'mismatch'
+  | 'caution'
+  | 'warrant'
+  | 'stolen'
+  | 'felony';
+
+export type FalseKind = 'wrongcar' | 'recovered' | 'notowner';
 
 export interface Stop {
   id: string;
@@ -141,6 +156,7 @@ export interface Stop {
   plateAskedAt: number | null;
   plateAt: number | null;
   falseHit: boolean;
+  falseKind: FalseKind | null;
   reported: string;
   confirmAskedAt: number | null;
   confirmAt: number | null;

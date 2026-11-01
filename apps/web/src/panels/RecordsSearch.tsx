@@ -12,12 +12,15 @@ const keyOf = (row: Pick) => (row.kind === 'person' ? `p-${row.item.id}` : `v-${
 function personFlag(p: Person) {
   if (p.warrant) return <span className="bad">Active warrant</span>;
   if (p.status === 'suspended') return <span className="warn">Licence suspended</span>;
+  if (p.alert) return <span className="warn">Alert on file</span>;
+  if (p.caution) return <span className="warn">Officer safety caution</span>;
   return <span className="ok">No wants</span>;
 }
 
 function vehicleFlag(v: Vehicle) {
   if (v.status === 'stolen') return <span className="bad">Stolen vehicle</span>;
   if (v.status === 'expired') return <span className="warn">Registration expired</span>;
+  if (!v.insured) return <span className="warn">No insurance on file</span>;
   return <span className="ok">Registration valid</span>;
 }
 

@@ -48,7 +48,8 @@ export function PersonRecord({ person, records, onVehicle }: PersonProps) {
           <div className="marks">
             {person.warrant ? <Mark tone="bad">Active warrant</Mark> : null}
             {person.status === 'suspended' ? <Mark tone="warn">Licence suspended</Mark> : null}
-            {!person.warrant && person.status === 'valid' ? <Mark tone="ok">No wants, licence valid</Mark> : null}
+            {person.alert ? <Mark tone="warn">{person.alert}</Mark> : null}
+            {!person.warrant && !person.alert && person.status === 'valid' ? <Mark tone="ok">No wants, licence valid</Mark> : null}
           </div>
         </div>
       </header>
@@ -175,6 +176,8 @@ export function VehicleRecord({ vehicle, records, onPerson }: VehicleProps) {
         ) : null}
         <dt>{vehicle.status === 'expired' ? 'Expired' : 'Expires'}</dt>
         <dd className={vehicle.status === 'expired' ? 'warn' : ''}>{vehicle.expires}</dd>
+        <dt>Insurance</dt>
+        <dd className={vehicle.insured ? '' : 'warn'}>{vehicle.insured ? 'On file' : 'None on file'}</dd>
         {vehicle.reportedBy ? (
           <>
             <dt className="bad">Reported by</dt>

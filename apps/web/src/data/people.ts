@@ -30,6 +30,7 @@ export interface Person {
   suspendedFor: string | null;
   warrant: Warrant | null;
   caution: string | null;
+  alert: string | null;
 }
 
 export interface Vehicle {
@@ -41,6 +42,7 @@ export interface Vehicle {
   body: string;
   ownerId: string;
   status: 'valid' | 'expired' | 'stolen';
+  insured: boolean;
   expires: string;
   reportedBy: string | null;
 }
@@ -135,6 +137,7 @@ export function makePerson(rand: Rand, n: number): Person {
     suspendedFor: suspended ? pick(rand, suspensions) : null,
     warrant: warrant ? makeWarrant(rand) : null,
     caution: warrant && rand() < 0.4 ? 'Prior weapons contact, use caution' : null,
+    alert: null,
   };
 }
 
@@ -155,6 +158,7 @@ export function makeVehicle(rand: Rand, ownerId: string, plate?: string): Vehicl
     body,
     ownerId,
     status: expires < TODAY ? 'expired' : 'valid',
+    insured: rand() > 0.04,
     expires: dateText(expires),
     reportedBy: null,
   };
