@@ -10,6 +10,8 @@ const ESCALATE_AFTER = 35;
 const BACKUP_TIMEOUT = 120;
 const NO_PLATE_TIMEOUT = 130;
 const LEAVE_AFTER_BACKUP = 8;
+export const CONFIRM_DELAY = 6;
+const FALSE_HIT_CHANCE = 0.3;
 
 
 const outcomeWeights: [StopOutcome, number][] = [
@@ -26,6 +28,14 @@ const readout: Record<StopOutcome, string> = {
   warrant: 'registered owner has an active warrant',
   stolen: 'reported stolen yesterday, hit not confirmed',
   felony: 'matches a vehicle linked to an armed robbery, hit not confirmed, use extreme caution',
+};
+
+const confirmed: Record<StopOutcome, string> = {
+  routine: '',
+  expired: '',
+  warrant: 'the warrant is active',
+  stolen: 'the vehicle is stolen',
+  felony: 'the vehicle is linked to an armed robbery, use extreme caution',
 };
 
 const plateLine = (stop: Stop) =>
@@ -51,6 +61,7 @@ export function nearestAvailable(units: Unit[], postal: number, count: number): 
 }
 
 export const stillNeeded = (stop: Stop) => Math.max(1, backupNeeded(stop.outcome) - stop.backupIds.length);
+export const needsConfirm = (outcome: StopOutcome) => needsBackup(outcome);
 export const isOpen = (stop: Stop) => stop.closedAt === null;
 export const stopWhere = (stop: Pick<Stop, 'postal'>) => postalLabel(stop.postal);
 
@@ -93,6 +104,11 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
     driver.caution = 'Armed and dangerous';
   }
 
+  const falseHit = outcome === 'stolen' && rand() < FALSE_HIT_CHANCE;
+  const other = falseHit ? makeVehicle(rand, owner.id) : car;
+  if (falseHit && other.make === car.make && other.model === car.model) other.year = car.year > 2012 ? car.year - 3 : car.year + 3;
+  const reported = `${other.year} ${other.make} ${other.model}, ${other.color}`;
+
   return {
     id: `TS-${n}`,
     unitId: unit.id,
@@ -111,6 +127,10 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
     plateAskedAt: null,
     plateAt: null,
     plateResult: null,
+    falseHit,
+    reported,
+    confirmAskedAt: null,
+    confirmAt: null,
     backupAskedAt: null,
     backupIds: [],
     backupSentAt: null,
@@ -124,6 +144,9 @@ export function makeStop(seed: number, n: number, clock: number, unit: Unit): St
 export function scoreStop(stop: Stop, failed: boolean): StopResult {
   const notes: string[] = [];
   let total = 0;
+  const confirms = needsConfirm(stop.outcome);
+  const plateMax = confirms ? 25 : 30;
+  const backupMax = confirms ? 40 : 50;
 
   if (stop.ackAt === null) {
     notes.push('You never copied the stop.');
@@ -137,15 +160,29 @@ export function scoreStop(stop: Stop, failed: boolean): StopResult {
     notes.push('The plate was never run.');
   } else {
     const wait = stop.plateAskedAt - stop.startedAt;
-    total += wait <= 20 ? 30 : wait <= 40 ? 20 : 10;
+    total += wait <= 20 ? plateMax : wait <= 40 ? Math.round(plateMax * 0.65) : Math.round(plateMax * 0.35);
     notes.push(`Plate run after ${Math.round(wait)}s.`);
   }
 
-  const needed = backupNeeded(stop.outcome);
+  if (confirms) {
+    if (stop.confirmAskedAt === null) {
+      notes.push('The hit was never confirmed with the originating agency.');
+    } else {
+      const wait = stop.confirmAskedAt - (stop.plateAt ?? stop.confirmAskedAt);
+      total += wait <= 20 ? 15 : wait <= 45 ? 10 : 5;
+      notes.push(stop.falseHit ? `Confirmed after ${Math.round(wait)}s, the vehicle did not match.` : `Hit confirmed after ${Math.round(wait)}s.`);
+    }
+  }
+
+  const wrong = stop.falseHit && stop.confirmAt !== null;
+  const needed = wrong ? 0 : backupNeeded(stop.outcome);
   if (needed === 0) {
     if (stop.backupIds.length === 0) {
-      total += 50;
+      total += backupMax;
       notes.push('Backup was not needed and none was sent.');
+    } else if (wrong && stop.backupSentAt !== null && stop.backupSentAt < stop.confirmAt!) {
+      total += Math.round(backupMax * 0.6);
+      notes.push('Backup was sent before the hit was confirmed. Careful, but the vehicle did not match.');
     } else {
       notes.push(`Backup was not needed, ${stop.backupIds.length} units were sent anyway.`);
     }
@@ -154,7 +191,7 @@ export function scoreStop(stop: Stop, failed: boolean): StopResult {
   } else {
     const wait = stop.backupSentAt !== null && stop.backupAskedAt !== null ? stop.backupSentAt - stop.backupAskedAt : Infinity;
     const enough = stop.backupIds.length >= needed;
-    total += enough ? (wait <= 30 ? 50 : 35) : 20;
+    total += enough ? (wait <= 30 ? backupMax : Math.round(backupMax * 0.7)) : Math.round(backupMax * 0.4);
     notes.push(
       enough ? `Backup sent ${Number.isFinite(wait) ? Math.round(wait) : '?'}s after the request.` : `${needed} units were needed, you sent ${stop.backupIds.length}.`,
     );
@@ -213,6 +250,17 @@ export function advanceStops(input: Input): Output {
     const age = clock - s.startedAt;
     const needed = backupNeeded(s.outcome);
 
+    if (s.confirmAskedAt !== null && s.confirmAt === null && clock >= s.confirmAskedAt + CONFIRM_DELAY) {
+      s = { ...s, confirmAt: clock };
+      if (s.falseHit) {
+        lines.push(['DISP', `${s.unitId}, the sheriff's office says the stolen vehicle is a ${s.reported}. That is not your vehicle, the plate was entered in error.`]);
+        lines.push([s.unitId, `${s.unitId} copy, vehicle does not match, standing down on backup.`]);
+      } else {
+        lines.push(['DISP', `${s.unitId}, the hit is confirmed with the originating agency, ${confirmed[s.outcome]}.`]);
+      }
+    }
+    const cleared = s.falseHit && s.confirmAt !== null;
+
     if (s.plateAskedAt !== null && s.plateResult === null && clock >= s.plateAskedAt + PLATE_DELAY) {
       const line = plateLine(s);
       s = { ...s, plateResult: line, plateAt: clock };
@@ -228,17 +276,19 @@ export function advanceStops(input: Input): Output {
       lines.push([s.unitId, `${s.unitId} to dispatch, did you get that plate?`]);
     }
 
-    if (needed > 0 && s.backupAskedAt !== null && s.backupIds.length < needed && clock > s.backupAskedAt + ESCALATE_AFTER && !s.escalated) {
+    if (!cleared && needed > 0 && s.backupAskedAt !== null && s.backupIds.length < needed && clock > s.backupAskedAt + ESCALATE_AFTER && !s.escalated) {
       s = { ...s, escalated: true };
       lines.push([s.unitId, `${s.unitId} I need that backup now!`, true]);
     }
 
     const arrived = units.filter((u) => u.status === 'onscene' && s.backupIds.includes(u.id)).length;
-    if (needed > 0 && s.backupArrivedAt === null && arrived >= needed) s = { ...s, backupArrivedAt: clock };
+    if (!cleared && needed > 0 && s.backupArrivedAt === null && arrived >= needed) s = { ...s, backupArrivedAt: clock };
 
     let close = false;
     let failed = false;
-    if (needed === 0) {
+    if (cleared) {
+      close = clock >= s.confirmAt! + LEAVE_AFTER_BACKUP;
+    } else if (needed === 0) {
       close = age >= s.duration;
     } else if (s.backupArrivedAt !== null) {
       close = clock >= s.backupArrivedAt + LEAVE_AFTER_BACKUP;

@@ -10,7 +10,7 @@ import { buildGraph, roundCorners, routeBetween } from './routing';
 import { etaSeconds, PATROL_SPEED, routeToPostal, stepUnit, UNIT_SPEED } from './sim';
 import { fullName } from '../data/people';
 import { buildRecords, search } from './records';
-import { makeStop, nearestAvailable, PLATE_DELAY, scoreStop, stillNeeded } from './stops';
+import { CONFIRM_DELAY, makeStop, nearestAvailable, PLATE_DELAY, scoreStop, stillNeeded } from './stops';
 import type { Stop } from './types';
 import { initialState, MAX_TYPED, MAX_TYPED_CHARS, reducer, type Action, type GameState } from './state';
 
@@ -643,11 +643,11 @@ describe('map markers', () => {
 });
 
 describe('traffic stops', () => {
-  const withStop = (outcome: Stop['outcome'] = 'routine') => {
+  const withStop = (outcome: Stop['outcome'] = 'routine', falseHit = false) => {
     let s = initialState(3, firstScenario(), true);
     s = reducer(s, { type: 'tick', dt: s.nextStopAt - s.clock + 0.1 });
     const stop = s.stops[0];
-    s = { ...s, stops: [{ ...stop, outcome }] };
+    s = { ...s, stops: [{ ...stop, outcome, falseHit }] };
     return s;
   };
 
@@ -689,6 +689,47 @@ describe('traffic stops', () => {
     expect(ids).not.toContain(s.stops[0].unitId);
     expect(stillNeeded(s.stops[0])).toBe(2);
     expect(stillNeeded({ ...s.stops[0], backupIds: ['a'] })).toBe(1);
+  });
+
+  it('confirms a hit with the originating agency after a short wait', () => {
+    let s = run(withStop('stolen'), [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    expect(reducer(s, { type: 'stopConfirm' })).toBe(s);
+    s = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+    s = reducer(s, { type: 'stopConfirm' });
+    expect(s.stops[0].confirmAskedAt).not.toBeNull();
+    s = reducer(s, { type: 'tick', dt: CONFIRM_DELAY + 0.1 });
+    expect(s.stops[0].confirmAt).not.toBeNull();
+    expect(s.radio.some((l) => l.text.includes('confirmed with the originating agency'))).toBe(true);
+  });
+
+  it('does not offer a confirm on a routine stop', () => {
+    const s = run(withStop(), [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    const after = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+    expect(reducer(after, { type: 'stopConfirm' })).toBe(after);
+  });
+
+  it('stands the unit down and closes the stop when the hit is not a match', () => {
+    let s = run(withStop('stolen', true), [{ type: 'stopCopy' }, { type: 'stopPlate' }]);
+    s = reducer(s, { type: 'tick', dt: PLATE_DELAY + 0.1 });
+    s = reducer(s, { type: 'stopConfirm' });
+    s = reducer(s, { type: 'tick', dt: CONFIRM_DELAY + 0.1 });
+    expect(s.radio.some((l) => l.text.includes('not your vehicle'))).toBe(true);
+    s = reducer(s, { type: 'tick', dt: 10 });
+    expect(s.stops[0].closedAt).not.toBeNull();
+    expect(s.stopResults[0].notes.join(' ')).toContain('did not match');
+  });
+
+  it('scores a confirmed hit with backup at full marks and a skipped confirm lower', () => {
+    const base = { ...withStop('stolen').stops[0], ackAt: 5, plateAskedAt: 10, plateAt: 14, backupAskedAt: 14, backupIds: ['1A-12'], backupSentAt: 20 };
+    expect(scoreStop({ ...base, confirmAskedAt: 20, confirmAt: 26 }, false).total).toBe(100);
+    expect(scoreStop(base, false).total).toBe(85);
+  });
+
+  it('gives most of the backup marks for caution on a false hit and none for sending it late', () => {
+    const base = { ...withStop('stolen', true).stops[0], ackAt: 5, plateAskedAt: 10, plateAt: 14, confirmAskedAt: 20, confirmAt: 26 };
+    expect(scoreStop(base, false).total).toBe(100);
+    expect(scoreStop({ ...base, backupIds: ['1A-12'], backupSentAt: 18 }, false).total).toBe(84);
+    expect(scoreStop({ ...base, backupIds: ['1A-12'], backupSentAt: 30 }, false).total).toBe(60);
   });
 
   it('scores a clean stop with no backup at full marks', () => {

@@ -1,7 +1,7 @@
 import { Car, CircleCheck, Info, TriangleAlert, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { fullName } from '../data/people';
-import { backupNeeded, isOpen, nearestAvailable, stillNeeded, stopWhere } from '../game/stops';
+import { backupNeeded, isOpen, nearestAvailable, needsConfirm, stillNeeded, stopWhere } from '../game/stops';
 import { formatClock } from '../game/sim';
 import type { Stop, StopOutcome } from '../game/types';
 import type { GameApi } from '../game/useGame';
@@ -75,14 +75,32 @@ function Status({ g, stop }: { g: GameApi; stop: Stop }) {
       </p>
     );
   }
+  if (stop.confirmAt !== null && stop.falseHit) {
+    return (
+      <p className="stop-status warn">
+        <Info size={16} aria-hidden="true" />
+        <span>
+          <b>Not a match</b>The sheriff says the stolen vehicle is a {stop.reported}. This is a different car, the unit stands down.
+        </span>
+      </p>
+    );
+  }
+  if (stop.confirmAskedAt !== null && stop.confirmAt === null) {
+    return (
+      <p className="stop-status info">
+        <Info size={16} aria-hidden="true" />
+        <span>Contacting the originating agency to confirm the hit.</span>
+      </p>
+    );
+  }
   const h = headline[stop.outcome];
   const Icon = h.tone === 'ok' ? CircleCheck : h.tone === 'warn' ? Info : TriangleAlert;
   return (
     <p className={`stop-status ${h.tone}`}>
       <Icon size={16} aria-hidden="true" />
       <span>
-        <b>{h.title}</b>
-        {h.note}
+        <b>{stop.confirmAt !== null ? `${h.title}, confirmed` : h.title}</b>
+        {stop.confirmAt !== null ? 'Confirmed with the originating agency. Send backup if you have not.' : h.note}
       </span>
     </p>
   );
@@ -141,6 +159,8 @@ export function StopCard({ g }: { g: GameApi }) {
   if (stop.ackAt !== null) events.push([at(stop, stop.ackAt)!, 'Copied']);
   if (stop.plateAskedAt !== null) events.push([at(stop, stop.plateAskedAt)!, 'Plate run']);
   if (stop.plateAt !== null) events.push([at(stop, stop.plateAt)!, needed ? 'Returned, backup requested' : 'Returned, no backup needed', needed > 0]);
+  if (stop.confirmAskedAt !== null) events.push([at(stop, stop.confirmAskedAt)!, 'Hit sent for confirmation']);
+  if (stop.confirmAt !== null) events.push([at(stop, stop.confirmAt)!, stop.falseHit ? 'Not a match' : 'Hit confirmed']);
   if (stop.backupSentAt !== null) events.push([at(stop, stop.backupSentAt)!, `Backup sent (${stop.backupIds.length})`]);
   if (stop.backupArrivedAt !== null) events.push([at(stop, stop.backupArrivedAt)!, 'Backup on scene']);
 
@@ -160,6 +180,16 @@ export function StopCard({ g }: { g: GameApi }) {
           <button type="button" className={`btn${copied && !ran ? ' primary' : ''}`} disabled={!copied || ran} onClick={() => dispatch({ type: 'stopPlate' })}>
             Run plate
           </button>
+          {needsConfirm(stop.outcome) ? (
+            <button
+              type="button"
+              className={`btn${stop.plateResult !== null && stop.confirmAskedAt === null ? ' primary' : ''}`}
+              disabled={stop.plateResult === null || stop.confirmAskedAt !== null}
+              onClick={() => dispatch({ type: 'stopConfirm' })}
+            >
+              Confirm hit
+            </button>
+          ) : null}
           <button type="button" className="btn" disabled={!copied} onClick={() => g.openLookup(stop.plateAskedAt === null ? stop.plate : fullName(stop.driver))}>
             Search records
           </button>

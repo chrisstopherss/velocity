@@ -140,6 +140,10 @@ export interface Stop {
   ackAt: number | null;
   plateAskedAt: number | null;
   plateAt: number | null;
+  falseHit: boolean;
+  reported: string;
+  confirmAskedAt: number | null;
+  confirmAt: number | null;
   plateResult: string | null;
   backupAskedAt: number | null;
   backupIds: string[];

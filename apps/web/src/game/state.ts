@@ -5,7 +5,7 @@ import { scoreCall } from './scoring';
 import { fullName } from '../data/people';
 import { mulberry32 } from '../data/scenarios';
 import { patrolRoute, routeToPoint, routeToPostal, stepUnit } from './sim';
-import { advanceStops, isOpen } from './stops';
+import { advanceStops, isOpen, needsConfirm } from './stops';
 import type {
   Fact,
   Incident,
@@ -58,6 +58,7 @@ export type Action =
   | { type: 'dismiss' }
   | { type: 'stopCopy' }
   | { type: 'stopPlate' }
+  | { type: 'stopConfirm' }
   | { type: 'stopBackup'; unitIds: string[] }
   | { type: 'next' }
   | { type: 'reset' };
@@ -166,6 +167,13 @@ export function reducer(state: GameState, action: Action): GameState {
       if (!stop || stop.ackAt === null || stop.plateAskedAt !== null) return state;
       return withRadio(updateStop(state, stop.id, { plateAskedAt: state.clock }), [
         ['DISP', `Running plate ${stop.plate} for ${stop.unitId}.`],
+      ]);
+    }
+    case 'stopConfirm': {
+      const stop = openStop(state);
+      if (!stop || stop.plateResult === null || stop.confirmAskedAt !== null || !needsConfirm(stop.outcome)) return state;
+      return withRadio(updateStop(state, stop.id, { confirmAskedAt: state.clock }), [
+        ['DISP', `Contacting the originating agency to confirm the hit on ${stop.plate}.`],
       ]);
     }
     case 'stopBackup': {

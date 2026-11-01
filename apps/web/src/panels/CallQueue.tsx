@@ -9,8 +9,10 @@ import { Panel } from '../ui/Panel';
 
 function stopStatus(stop: Stop): string {
   if (stop.ackAt === null) return 'New';
+  if (stop.confirmAt !== null && stop.falseHit) return 'Not a match';
   if (stop.backupArrivedAt !== null) return 'Backup on scene';
   if (stop.backupSentAt !== null) return 'Backup sent';
+  if (stop.confirmAskedAt !== null && stop.confirmAt === null) return 'Confirming hit';
   if (stop.backupAskedAt !== null) return 'Backup requested';
   if (stop.plateAskedAt !== null) return 'Plate run';
   return 'Copied';
